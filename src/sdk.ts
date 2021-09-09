@@ -6,7 +6,7 @@ import {
     TransactionConfig,
     TransactionReceipt
 } from 'web3-core';
-import { EnvelopingConfig, Web3Provider } from '@rsksmart/rif-relay-common';
+import { EnvelopingConfig, EnvelopingTransactionDetails, Web3Provider } from '@rsksmart/rif-relay-common';
 import {
     RelayProvider,
     resolveConfiguration
@@ -27,6 +27,7 @@ import {
     SmartWallet
 } from './interfaces';
 import { Contracts } from './contracts';
+import { toBN } from 'web3-utils';
 
 export class DefaultRelayingServices implements RelayingServices {
     protected readonly web3Instance: Web3;
@@ -46,50 +47,61 @@ export class DefaultRelayingServices implements RelayingServices {
         this.web3Instance = web3Instance
             ? web3Instance
             : web3Provider
-            ? new Web3(web3Provider as any)
-            : new Web3(rskHost);
+                ? new Web3(web3Provider as any)
+                : new Web3(rskHost);
         this.account = account;
     }
 
     async configure(
         envelopingConfig: Partial<EnvelopingConfig>
     ): Promise<EnvelopingConfig> {
-        const partialConfig: Partial<EnvelopingConfig> = mergeConfiguration(
-            envelopingConfig,
-            {
-                onlyPreferredRelays: true,
-                preferredRelays: ['http://localhost:8090'],
-                gasPriceFactorPercent: 0,
-                relayLookupWindowBlocks: 1e5,
-                chainId: await this.web3Instance.eth.getChainId(),
-                relayVerifierAddress:
-                    this.contracts.addresses.smartWalletRelayVerifier,
-                deployVerifierAddress:
-                    this.contracts.addresses.smartWalletDeployVerifier,
-                smartWalletFactoryAddress:
-                    this.contracts.addresses.smartWalletFactory
-            }
-        );
-        const resolvedConfig: EnvelopingConfig = await resolveConfiguration(
-            this.web3Instance.currentProvider as Web3Provider,
-            partialConfig
-        );
-        resolvedConfig.relayHubAddress =
-            envelopingConfig.relayHubAddress ??
-            this.contracts.addresses.relayHub;
-        return resolvedConfig;
+        try {
+            const partialConfig: Partial<EnvelopingConfig> = mergeConfiguration(
+                envelopingConfig,
+                {
+                    onlyPreferredRelays: true,
+                    preferredRelays: ['http://localhost:8090'],
+                    gasPriceFactorPercent: 0,
+                    relayLookupWindowBlocks: 1e5,
+                    chainId: await this.web3Instance.eth.getChainId(),
+                    relayVerifierAddress:
+                        this.contracts.addresses.smartWalletRelayVerifier,
+                    deployVerifierAddress:
+                        this.contracts.addresses.smartWalletDeployVerifier,
+                    smartWalletFactoryAddress:
+                        this.contracts.addresses.smartWalletFactory
+                }
+            );
+            const { relayHubAddress, ...newPartialConfig } = partialConfig;
+            const resolvedConfig: EnvelopingConfig = await resolveConfiguration(
+                this.web3Instance.currentProvider as Web3Provider,
+                newPartialConfig
+            );
+            resolvedConfig.relayHubAddress = relayHubAddress ?? this.contracts.addresses.relayHub;
+            return resolvedConfig;
+        } catch (error) {
+            console.log(error)
+        }
     }
 
     async initialize(
         envelopingConfig: Partial<EnvelopingConfig>,
         contractAddresses?: RelayingServicesAddresses
     ): Promise<void> {
-        try{
+        try {
+            this.contracts = new Contracts(
+                this.web3Instance,
+                await this.web3Instance.eth.getChainId(),
+                contractAddresses
+            );
             this.developmentAccounts = await this.web3Instance.eth.getAccounts();
+            const configuation = await this.configure(envelopingConfig);
             const provider = new RelayProvider(
                 this.web3Instance.currentProvider as HttpProvider,
-                await this.configure(envelopingConfig)
+                configuation
             );
+            await provider.relayClient._init();
+
             if (this.account) {
                 provider.addAccount({
                     address: this.account.address,
@@ -101,13 +113,8 @@ export class DefaultRelayingServices implements RelayingServices {
             }
             this.web3Instance.setProvider(provider);
             this.relayProvider = provider;
-            this.contracts = new Contracts(
-                this.web3Instance,
-                await this.web3Instance.eth.getChainId(),
-                contractAddresses
-            );
             console.debug('RelayingServicesSDK initialized correctly');
-        }catch(error){
+        } catch (error) {
             console.error('RelayingServicesSDK fail to initialize', error);
         }
     }
@@ -162,29 +169,30 @@ export class DefaultRelayingServices implements RelayingServices {
             tokenAddress,
             tokenAmount
         });
-
+        tokenAmount = tokenAmount ?? 0;
         console.debug('Checking if the wallet already exists');
-
         const smartWalletDeployed = await addressHasCode(
             this.web3Instance,
             smartWallet.address
         );
 
         if (!smartWalletDeployed) {
-            const token = getContract(
-                this.web3Instance,
-                ERC20Token.getAbi(),
-                tokenAddress
-            );
-
-            const balance = await token.methods
-                .balanceOf(smartWallet.address)
-                .call();
-
-            if (balance <= 0) {
-                console.warn(
-                    "Smart Wallet doesn't have funds so this will be a subsidized deploy."
+            if (tokenAddress) {
+                const token = getContract(
+                    this.web3Instance,
+                    ERC20Token.getAbi(),
+                    tokenAddress
                 );
+
+                const balance = await token.methods
+                    .balanceOf(smartWallet.address)
+                    .call();
+
+                if (balance <= 0) {
+                    console.warn(
+                        "Smart Wallet doesn't have funds so this will be a subsidized deploy."
+                    );
+                }
             }
 
             console.debug(
@@ -212,12 +220,9 @@ export class DefaultRelayingServices implements RelayingServices {
                 'Smart wallet successfully deployed',
                 transactionHash
             );
-
-            smartWallet.deployTransaction =
-                await this.web3Instance.eth.getTransactionReceipt(
-                    transactionHash
-                );
-            smartWallet.deployed = smartWallet.deployTransaction.status;
+            
+            smartWallet.deployTransaction = transactionHash;
+            smartWallet.deployed = true;
             smartWallet.tokenAddress = tokenAddress;
             return smartWallet;
         } else {
@@ -332,6 +337,39 @@ export class DefaultRelayingServices implements RelayingServices {
         throw new Error(
             `Smart Wallet is not deployed or the address ${smartWallet.address} is not a smart wallet.`
         );
+    }
+
+    async estimateMaxPossibleRelayGas(
+        smartWallet: SmartWallet
+        , relayWorker: string
+    ): Promise<string> {
+        console.debug('estimateMaxPossibleRelayGas Params', {
+            smartWallet
+        });
+        const gasPrice = toBN(await this.relayProvider.relayClient._calculateGasPrice());
+        const tokenAmount = await this.web3Instance.utils.toWei('1');
+
+        let trxDetails: EnvelopingTransactionDetails = {
+            from: this.getAccountAddress()
+            , to: ZERO_ADDRESS.toString()
+            , value: '0'
+            , relayHub: this.contracts.addresses.relayHub
+            , callVerifier: this.contracts.addresses.smartWalletRelayVerifier
+            , callForwarder: this.contracts.addresses.smartWalletFactory
+            , data: '0x'
+            , index: smartWallet.index.toString()
+            , tokenContract: this.contracts.addresses.testToken
+            , tokenAmount: tokenAmount
+            , onlyPreferredRelays: true
+            , isSmartWalletDeploy: true
+            , smartWalletAddress: smartWallet.address
+            , recoverer: ZERO_ADDRESS.toString()
+        };
+        const maxPossibleGasValue = await this.relayProvider.relayClient
+            .estimateMaxPossibleRelayGas(trxDetails, relayWorker);
+        const maxPossibleGas = toBN(maxPossibleGasValue);
+        const estimate = maxPossibleGas.mul(gasPrice);
+        return estimate.toString();
     }
 
     getAccountAddress(): string {

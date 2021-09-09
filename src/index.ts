@@ -4,7 +4,7 @@
 import { Account, TransactionConfig, TransactionReceipt } from 'web3-core';
 import { DefaultRelayingServices } from './sdk';
 import { RelayingServicesAddresses, RelayingServicesConfiguration, SmartWallet } from './interfaces';
-import { EnvelopingConfig } from '@rsksmart/rif-relay-common';
+import { EnvelopingConfig, EnvelopingTransactionDetails } from '@rsksmart/rif-relay-common';
 
 interface RelayingServices {
     /**
@@ -97,6 +97,14 @@ interface RelayingServices {
      * @param commitmentReceipt the commitment receipt of the commited transaction
      */
     claim(commitmentReceipt: any): Promise<void>;
+
+    /**
+     * It executes a estimate max possible relay gas to get a number value
+     *
+     * @param trxDetails the transaction details
+     * @param relayWorker the realy worker contract address
+     */
+     estimateMaxPossibleRelayGas(SmartWallet:SmartWallet, relayWorker:string): Promise<string> 
 }
 
 export {

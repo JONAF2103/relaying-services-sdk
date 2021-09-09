@@ -5,7 +5,7 @@ export interface SmartWallet {
     index: number;
     address: string;
     deployed: boolean;
-    deployTransaction?: TransactionReceipt;
+    deployTransaction?: string;
     tokenAddress?: string;
 }
 
