@@ -20,20 +20,6 @@ const smartWallet: SmartWallet = {
     index: 0,
     deployed: true
 };
-describe('Tests for relay transaction', () => {
-    let sdk: RelayingServices;
-
-    beforeEach(async () => {
-        sdk = new MockRelayingServices();
-        sdk.initialize({});
-    });
-
-    it('Should relay transaction successfully', async () => {
-        const transactionReceipt: TransactionReceipt =
-            await sdk.relayTransaction(transaction, smartWallet, 0);
-        expect(transactionReceipt).toBe(MOCK_TRANSACTION_RECEIPT);
-    });
-});
 
 describe('Tests for smart wallet without being deployed', () => {
     let sdk: RelayingServices;

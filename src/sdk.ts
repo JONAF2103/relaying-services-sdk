@@ -38,6 +38,8 @@ export class DefaultRelayingServices implements RelayingServices {
     protected contractAddresses: RelayingServicesAddresses;
     protected envelopingConfig: EnvelopingConfig;
 
+    private txId:number = 777;
+
     constructor({
         rskHost,
         account,
@@ -315,18 +317,35 @@ export class DefaultRelayingServices implements RelayingServices {
         });
         console.debug('Checking if the wallet exists');
         if (await addressHasCode(this.web3Instance, smartWallet.address)) {
-            const transactionReceipt =
-                (await this.web3Instance.eth.sendTransaction({
-                    from: this.getAccountAddress(),
-                    callVerifier:
-                        this.contracts.addresses.smartWalletRelayVerifier,
-                    callForwarder: smartWallet.address,
-                    isSmartWalletDeploy: false,
-                    onlyPreferredRelays: true,
-                    tokenAmount,
-                    tokenContract: smartWallet.tokenAddress,
-                    ...unsignedTx
-                } as TransactionConfig)) as TransactionReceipt;
+            const jsonRpcPayload = {
+                jsonrpc: '2.0',
+                id: ++this.txId,
+                method: 'eth_sendTransaction',
+                params: [
+                    {
+                        from: this.getAccountAddress(),
+                        to: smartWallet.tokenAddress,
+                        value: "0",
+                        relayHub: this.contracts.addresses.relayHub,
+                        callVerifier: this.contracts.addresses.smartWalletRelayVerifier,
+                        callForwarder: smartWallet.address,
+                        data: unsignedTx.data,
+                        tokenContract: smartWallet.tokenAddress,
+                        tokenAmount: await this.web3Instance.utils.toWei(tokenAmount.toString()),
+                        onlyPreferredRelays: true
+                    }
+                ]
+            }
+            const transactionReceipt: TransactionReceipt = await new Promise((resolve, reject) =>{ 
+                this.relayProvider._ethSendTransaction(jsonRpcPayload, async (error: Error, jsonrpc:any) =>{
+                    if(error){
+                        reject(error);
+                    }
+                    const recipint = await web3.eth.getTransactionReceipt(jsonrpc.result);
+                    resolve(recipint);
+                });
+            });
+
             if (!transactionReceipt.status) {
                 const errorMessage = 'Error relaying transaction';
                 console.debug(errorMessage, transactionReceipt);

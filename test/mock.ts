@@ -132,11 +132,24 @@ export class Web3EthMock {
         return Promise.resolve(MOCK_TRANSACTION_RECEIPT);
     };
 }
+export class Web3UtilsMock {
+    constructor(private configuration: Web3MockConfiguration) {}
+    async toWei() {
+        console.debug('getAllowedTokens');
+        return {
+            call: () => {
+                return [MOCK_SMART_WALLET_ADDRESS]
+            }
+        };
+    }
+}
 
 export class Web3Mock {
     eth: Web3EthMock;
+    utils: Web3UtilsMock;
     constructor(private configuration: Web3MockConfiguration) {
         this.eth = new Web3EthMock(configuration);
+        this.utils = new Web3UtilsMock(configuration);
     }
 }
 
@@ -167,6 +180,14 @@ export class MockRelayProvider {
         return {
             call: () => {
                 return [MOCK_SMART_WALLET_ADDRESS]
+            }
+        };
+    }
+    async _ethSendTransaction() {
+        console.debug('_ethSendTransaction');
+        return {
+            call: () => {
+                return MOCK_TRANSACTION_RECEIPT;
             }
         };
     }

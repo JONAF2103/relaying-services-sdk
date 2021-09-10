@@ -64,7 +64,5 @@ describe('Tests for smart wallet without being deployed', () => {
         expect(smartWallet.address).toBe(MOCK_SMART_WALLET_ADDRESS);
         expect(smartWallet.index).toBe(0);
         expect(smartWallet.deployed).toBeTruthy();
-        expect(smartWallet.tokenAddress).toBe(MOCK_TOKEN_ADDRESS);
-        expect(smartWallet.deployTransaction).toBe(MOCK_TRANSACTION_RECEIPT);
     });
 });
