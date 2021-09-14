@@ -152,6 +152,41 @@ export class DefaultRelayingServices implements RelayingServices {
         }
     }
 
+    async isAllowedToken(tokenAddress: string): Promise<boolean> {
+        console.debug('isAllowedToken Params', {
+            tokenAddress
+        });
+        const relayVerifierContract =
+            this.contracts.getSmartWalletRelayVerifier();
+        const deployVerifierContract =
+            this.contracts.getSmartWalletDeployVerifier();
+        const relayVerifierAllowsToken: boolean =
+            await relayVerifierContract.methods
+                .acceptsToken(tokenAddress)
+                .call();
+        const deployVerifierAllowsToken: boolean =
+            await deployVerifierContract.methods
+                .acceptsToken(tokenAddress)
+                .call();
+        return relayVerifierAllowsToken && deployVerifierAllowsToken;
+    }
+
+    async getAllowedTokens(): Promise<string[]> {
+        const relayVerifierContract =
+            this.contracts.getSmartWalletRelayVerifier();
+        const deployVerifierContract =
+            this.contracts.getSmartWalletDeployVerifier();
+        const relayVerifierTokens: string[] =
+            await relayVerifierContract.methods.getAcceptedTokens().call();
+        const deployVerifierTokens: string[] =
+            await deployVerifierContract.methods.getAcceptedTokens().call();
+        const tokens = new Set<string>([
+            ...relayVerifierTokens,
+            ...deployVerifierTokens
+        ]);
+        return [...tokens];
+    }
+    
     async claim(commitmentReceipt: any): Promise<void> {
         console.debug('claim Params', {
             commitmentReceipt
@@ -201,8 +236,7 @@ export class DefaultRelayingServices implements RelayingServices {
                 'Deploying smart wallet for address',
                 smartWallet.address
             );
-
-            const transactionHash = await this.relayProvider.deploySmartWallet({
+            const txDetails = <EnvelopingTransactionDetails>{
                 from: this.getAccountAddress(),
                 to: ZERO_ADDRESS,
                 callVerifier:
@@ -216,7 +250,9 @@ export class DefaultRelayingServices implements RelayingServices {
                 isSmartWalletDeploy: true,
                 onlyPreferredRelays: true,
                 smartWalletAddress: smartWallet.address
-            });
+            };
+            
+            const transactionHash = await this.relayProvider.deploySmartWallet(txDetails);
 
             console.debug(
                 'Smart wallet successfully deployed',
@@ -241,7 +277,7 @@ export class DefaultRelayingServices implements RelayingServices {
 
         const smartWalletFactory = this.contracts.getSmartWalletFactory();
 
-        const smartWalletAddress = smartWalletFactory.methods
+        const smartWalletAddress = await smartWalletFactory.methods
             .getSmartWalletAddress(
                 this.getAccountAddress(),
                 ZERO_ADDRESS,
@@ -261,41 +297,6 @@ export class DefaultRelayingServices implements RelayingServices {
             index: smartWalletIndex,
             deployed
         };
-    }
-
-    async getAllowedTokens(): Promise<string[]> {
-        const relayVerifierContract =
-            this.contracts.getSmartWalletRelayVerifier();
-        const deployVerifierContract =
-            this.contracts.getSmartWalletDeployVerifier();
-        const relayVerifierTokens: string[] =
-            await relayVerifierContract.methods.getAcceptedTokens().call();
-        const deployVerifierTokens: string[] =
-            await deployVerifierContract.methods.getAcceptedTokens().call();
-        const tokens = new Set<string>([
-            ...relayVerifierTokens,
-            ...deployVerifierTokens
-        ]);
-        return [...tokens];
-    }
-
-    async isAllowedToken(tokenAddress: string): Promise<boolean> {
-        console.debug('isAllowedToken Params', {
-            tokenAddress
-        });
-        const relayVerifierContract =
-            this.contracts.getSmartWalletRelayVerifier();
-        const deployVerifierContract =
-            this.contracts.getSmartWalletDeployVerifier();
-        const relayVerifierAllowsToken: boolean =
-            await relayVerifierContract.methods
-                .acceptsToken(tokenAddress)
-                .call();
-        const deployVerifierAllowsToken: boolean =
-            await deployVerifierContract.methods
-                .acceptsToken(tokenAddress)
-                .call();
-        return relayVerifierAllowsToken && deployVerifierAllowsToken;
     }
 
     async isSmartWalletDeployed(smartWalletAddress: string): Promise<boolean> {
