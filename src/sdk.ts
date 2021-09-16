@@ -12,11 +12,12 @@ import {
     resolveConfiguration
 } from '@rsksmart/rif-relay-client';
 import Web3 from 'web3';
-import { RelayVerifier } from '@rsksmart/rif-relay-contracts';
+import { DeployVerifier, RelayVerifier } from '@rsksmart/rif-relay-contracts';
 import {
     addressHasCode,
     getAbiItem,
     getContract,
+    getRevertReason,
     mergeConfiguration
 } from './utils';
 import { ERC20Token } from './ERC20Token';
@@ -38,7 +39,7 @@ export class DefaultRelayingServices implements RelayingServices {
     protected contractAddresses: RelayingServicesAddresses;
     protected envelopingConfig: EnvelopingConfig;
 
-    private txId:number = 777;
+    private txId: number = 777;
 
     constructor({
         rskHost,
@@ -123,33 +124,39 @@ export class DefaultRelayingServices implements RelayingServices {
 
     async allowToken(
         tokenAddress: string,
-        contractsOwnerAccount: Account
+        account?: string
     ): Promise<void> {
         console.debug('allowToken Params', {
             tokenAddress,
-            contractsOwnerAccount
+            account
         });
-        const abiMethod = getAbiItem(RelayVerifier.abi, 'acceptToken');
-        const encodedCall = this.web3Instance.eth.abi.encodeFunctionCall(
-            abiMethod,
-            [tokenAddress]
-        );
-        const transactionConfig: TransactionConfig = {
-            from: contractsOwnerAccount.address,
-            to: this.contracts.addresses.smartWalletRelayVerifier,
-            data: encodedCall
-        };
-        const signedTransaction: SignedTransaction =
-            await contractsOwnerAccount.signTransaction(transactionConfig);
-        const transactionReceipt: TransactionReceipt =
-            await this.web3Instance.eth.sendSignedTransaction(
-                signedTransaction.rawTransaction
-            );
-        if (!transactionReceipt.status) {
-            const errorMessage = 'Error sending allowToken transaction';
-            console.debug(errorMessage, transactionReceipt);
-            throw new Error(errorMessage);
+        if (!account) {
+            account = this.getAccountAddress();
         }
+        
+        const smartWalletDeployVerifier = await new web3.eth.Contract(DeployVerifier.abi, this.contracts.addresses.smartWalletDeployVerifier);
+        const smartWalletRelayVerifier = await new web3.eth.Contract(RelayVerifier.abi, this.contracts.addresses.smartWalletRelayVerifier);
+
+        try {
+            const acceptToken = smartWalletDeployVerifier.methods.acceptToken(tokenAddress);
+            console.log(acceptToken);
+            await acceptToken.send({ from: account });
+        } catch (error: any) {
+            console.log('Error');
+            console.log(error);
+            const reason = await getRevertReason(error.receipt.transactionHash);
+            console.error("Error adding token with address " + tokenAddress + " to allowed tokens on smart wallet deploy verifier", reason);
+            throw error;
+        }
+        try {
+            await smartWalletRelayVerifier.methods.acceptToken(tokenAddress).send({ from: account });
+        } catch (error: any) {
+            console.log(error);
+            const reason = await getRevertReason(error.receipt.transactionHash);
+            console.error("Error adding token with address " + tokenAddress + " to allowed tokens on smart wallet relay verifier", reason);
+            throw error;
+        }
+        console.debug("Tokens allowed successfully!");
     }
 
     async isAllowedToken(tokenAddress: string): Promise<boolean> {
@@ -186,7 +193,7 @@ export class DefaultRelayingServices implements RelayingServices {
         ]);
         return [...tokens];
     }
-    
+
     async claim(commitmentReceipt: any): Promise<void> {
         console.debug('claim Params', {
             commitmentReceipt
@@ -251,14 +258,14 @@ export class DefaultRelayingServices implements RelayingServices {
                 onlyPreferredRelays: true,
                 smartWalletAddress: smartWallet.address
             };
-            
+
             const transactionHash = await this.relayProvider.deploySmartWallet(txDetails);
 
             console.debug(
                 'Smart wallet successfully deployed',
                 transactionHash
             );
-            
+
             smartWallet.deployTransaction = transactionHash;
             smartWallet.deployed = true;
             smartWallet.tokenAddress = tokenAddress;
@@ -337,9 +344,9 @@ export class DefaultRelayingServices implements RelayingServices {
                     }
                 ]
             }
-            const transactionReceipt: TransactionReceipt = await new Promise((resolve, reject) =>{ 
-                this.relayProvider._ethSendTransaction(jsonRpcPayload, async (error: Error, jsonrpc:any) =>{
-                    if(error){
+            const transactionReceipt: TransactionReceipt = await new Promise((resolve, reject) => {
+                this.relayProvider._ethSendTransaction(jsonRpcPayload, async (error: Error, jsonrpc: any) => {
+                    if (error) {
                         reject(error);
                     }
                     const recipint = await web3.eth.getTransactionReceipt(jsonrpc.result);

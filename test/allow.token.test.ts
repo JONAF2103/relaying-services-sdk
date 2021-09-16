@@ -17,6 +17,6 @@ describe('Tests for allow token', () => {
     });
 
     it('Should run allow token', async () => {
-        await sdk.allowToken(MOCK_TOKEN_ADDRESS, MOCK_ACCOUNT);
+        await sdk.allowToken(MOCK_TOKEN_ADDRESS, MOCK_ACCOUNT.address);
     });
 });

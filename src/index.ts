@@ -87,7 +87,7 @@ interface RelayingServices {
      */
     allowToken(
         tokenAddress: string,
-        contractsOwnerAccount: Account
+        account: string
     ): Promise<void>;
 
     /**
