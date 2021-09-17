@@ -1,12 +1,11 @@
 import { RelayingServices, SmartWallet } from '../src';
 import { MockRelayingServices, Web3Mock } from './mock';
-import { TransactionConfig, TransactionReceipt } from 'web3-core';
+import { TransactionConfig } from 'web3-core';
 import Expect = jest.Expect;
 import {
     MOCK_CONTRACT_ADDRESS,
     MOCK_ADDRESS,
-    MOCK_SMART_WALLET_ADDRESS,
-    MOCK_TRANSACTION_RECEIPT
+    MOCK_SMART_WALLET_ADDRESS
 } from './constants';
 
 declare const expect: Expect;
@@ -35,7 +34,7 @@ describe('Tests for smart wallet without being deployed', () => {
     it('Should fail to relay transaction', async () => {
         try {
             await sdk.relayTransaction(transaction, smartWallet, 0);
-        } catch (error:any) {
+        } catch (error: any) {
             expect(error.message).toBe(
                 `Smart Wallet is not deployed or the address ${smartWallet.address} is not a smart wallet.`
             );

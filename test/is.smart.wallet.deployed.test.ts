@@ -1,9 +1,7 @@
 import { RelayingServices } from '../src';
 import { MockRelayingServices, Web3Mock } from './mock';
 import Expect = jest.Expect;
-import {
-    MOCK_SMART_WALLET_ADDRESS,
-} from './constants';
+import { MOCK_SMART_WALLET_ADDRESS } from './constants';
 
 declare const expect: Expect;
 

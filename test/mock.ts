@@ -4,7 +4,7 @@ import {
     EnvelopingConfig,
     EnvelopingTransactionDetails
 } from '@rsksmart/rif-relay-common';
-import { RelayingServicesAddresses, SmartWallet } from '../src/interfaces';
+import { RelayingServicesAddresses } from '../src/interfaces';
 import { Contracts } from '../src/contracts';
 import { AbiItem } from 'web3-utils';
 import {
@@ -57,7 +57,7 @@ export class Web3MethodsMock {
             }
         };
     }
-    public acceptsToken(address: string){
+    public acceptsToken(address: string) {
         console.debug('acceptsToken', {
             address
         });
@@ -67,7 +67,7 @@ export class Web3MethodsMock {
             }
         };
     }
-    public getAcceptedTokens(){
+    public getAcceptedTokens() {
         console.debug('getAcceptedTokens');
         return {
             call: () => {
@@ -138,7 +138,7 @@ export class Web3UtilsMock {
         console.debug('getAllowedTokens');
         return {
             call: () => {
-                return [MOCK_SMART_WALLET_ADDRESS]
+                return [MOCK_SMART_WALLET_ADDRESS];
             }
         };
     }
@@ -179,7 +179,7 @@ export class MockRelayProvider {
         console.debug('getAllowedTokens');
         return {
             call: () => {
-                return [MOCK_SMART_WALLET_ADDRESS]
+                return [MOCK_SMART_WALLET_ADDRESS];
             }
         };
     }
@@ -220,4 +220,3 @@ export class MockRelayingServices extends DefaultRelayingServices {
         return MOCK_ADDRESS;
     }
 }
-

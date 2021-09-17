@@ -1,12 +1,6 @@
 import { RelayingServices } from '../src';
 import { MockRelayingServices } from './mock';
-import Expect = jest.Expect;
-import {
-    MOCK_ACCOUNT,
-    MOCK_TOKEN_ADDRESS
-} from './constants';
-
-declare const expect: Expect;
+import { MOCK_ACCOUNT, MOCK_TOKEN_ADDRESS } from './constants';
 
 describe('Tests for allow token', () => {
     let sdk: RelayingServices;

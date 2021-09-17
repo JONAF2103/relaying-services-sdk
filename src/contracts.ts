@@ -23,13 +23,17 @@ export class Contracts {
     ) {
         this.web3Instance = web3Instance;
         contractAddresses = contractAddresses ?? <RelayingServicesAddresses>{};
-        const contracts: RelayingServicesAddresses = getContractAddresses(chainId ?? DEFAULT_NETWORK_ID);
-        this.addresses = <RelayingServicesAddresses>mergeConfiguration(contractAddresses, contracts);
+        const contracts: RelayingServicesAddresses = getContractAddresses(
+            chainId ?? DEFAULT_NETWORK_ID
+        );
+        this.addresses = <RelayingServicesAddresses>(
+            mergeConfiguration(contractAddresses, contracts)
+        );
         this.initialize();
     }
 
     protected initialize(): void {
-        try{
+        try {
             this.smartWalletRelayVerifier = getContract(
                 this.web3Instance,
                 RelayVerifier.abi,
@@ -41,7 +45,7 @@ export class Contracts {
                 this.addresses.smartWalletDeployVerifier
             );
             console.debug('Contracts initialized correctly');
-        }catch(error){
+        } catch (error) {
             console.error('Contracts fail to initialize', error);
         }
     }
