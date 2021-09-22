@@ -219,4 +219,8 @@ export class MockRelayingServices extends DefaultRelayingServices {
     getAccountAddress(): string {
         return MOCK_ADDRESS;
     }
+    async allowToken(tokenAddress:string, account?:string): Promise<string> {
+        console.debug('_ethSendTransaction');
+        return tokenAddress;
+    }
 }

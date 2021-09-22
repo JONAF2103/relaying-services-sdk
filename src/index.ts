@@ -92,7 +92,7 @@ interface RelayingServices {
      * @param tokenAddress the token address to mark as allowed by the relaying services system.
      * @param contractsOwnerAccount the owner account of the relaying services contracts
      */
-    allowToken(tokenAddress: string, account: string): Promise<void>;
+    allowToken(tokenAddress: string, account: string): Promise<string>;
 
     /**
      * It executes a claim for a commitmentReceipt, this is to penalize a

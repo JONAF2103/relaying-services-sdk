@@ -126,7 +126,7 @@ export class DefaultRelayingServices implements RelayingServices {
         }
     }
 
-    async allowToken(tokenAddress: string, account?: string): Promise<void> {
+    async allowToken(tokenAddress: string, account?: string): Promise<string> {
         console.debug('allowToken Params', {
             tokenAddress,
             account
@@ -135,11 +135,11 @@ export class DefaultRelayingServices implements RelayingServices {
             account = this.getAccountAddress();
         }
 
-        const smartWalletDeployVerifier = await new web3.eth.Contract(
+        const smartWalletDeployVerifier = await new  this.web3Instance.eth.Contract(
             DeployVerifier.abi,
             this.contracts.addresses.smartWalletDeployVerifier
         );
-        const smartWalletRelayVerifier = await new web3.eth.Contract(
+        const smartWalletRelayVerifier = await new  this.web3Instance.eth.Contract(
             RelayVerifier.abi,
             this.contracts.addresses.smartWalletRelayVerifier
         );
@@ -177,6 +177,7 @@ export class DefaultRelayingServices implements RelayingServices {
             throw error;
         }
         console.debug('Tokens allowed successfully!');
+        return tokenAddress;
     }
 
     async isAllowedToken(tokenAddress: string): Promise<boolean> {
