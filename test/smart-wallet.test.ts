@@ -10,7 +10,7 @@ describe('Tests for smart wallet', () => {
 
     beforeEach(async () => {
         sdk = new MockRelayingServices();
-        sdk.initialize({});
+        await sdk.initialize({});
     });
 
     it('Should fail with smart wallet already deployed', async () => {

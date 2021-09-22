@@ -9,7 +9,7 @@ describe('Tests for get allow token', () => {
 
     beforeEach(async () => {
         sdk = new MockRelayingServices();
-        sdk.initialize({});
+        await sdk.initialize({});
     });
 
     it('Should run get allow token', async () => {

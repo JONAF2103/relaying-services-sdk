@@ -14,7 +14,7 @@ describe('Tests for smart wallet', () => {
                 getCodeEmpty: false
             }) as any
         );
-        sdk.initialize({});
+        await sdk.initialize({});
     });
 
     it('Should fail with smart wallet already deployed', async () => {
@@ -44,7 +44,7 @@ describe('Tests for smart wallet without being deployed', () => {
                 getCodeEmpty: true
             }) as any
         );
-        sdk.initialize({});
+        await sdk.initialize({});
     });
 
     it('Should deploy smart wallet successfully', async () => {

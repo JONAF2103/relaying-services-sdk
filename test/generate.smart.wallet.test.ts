@@ -10,7 +10,7 @@ describe('Tests for is generate smart wallet', () => {
 
     beforeEach(async () => {
         sdk = new MockRelayingServices();
-        sdk.initialize({});
+        await sdk.initialize({});
     });
 
     it('Should return is deployed smart wallet', async () => {

@@ -7,7 +7,7 @@ describe('Tests for allow token', () => {
 
     beforeEach(async () => {
         sdk = new MockRelayingServices();
-        sdk.initialize({});
+        await sdk.initialize({});
     });
 
     it('Should run allow token', async () => {

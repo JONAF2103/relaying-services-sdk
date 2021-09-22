@@ -9,7 +9,7 @@ describe('Tests for claim operation', () => {
 
     beforeEach(async () => {
         sdk = new MockRelayingServices();
-        sdk.initialize({});
+        await sdk.initialize({});
     });
 
     it('Should fail by not implemented error', async () => {
