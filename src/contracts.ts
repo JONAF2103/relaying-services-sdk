@@ -45,8 +45,8 @@ export class Contracts {
                 this.addresses.smartWalletDeployVerifier
             );
             console.debug('Contracts initialized correctly');
-        } catch (error) {
-            console.error('Contracts fail to initialize', error);
+        } catch (error:any) {
+            throw new Error('Contracts fail to initialize: ' + error.message);
         }
     }
 
