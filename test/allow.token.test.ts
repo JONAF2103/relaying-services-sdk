@@ -15,9 +15,12 @@ describe('Tests for allow token', () => {
 
     it('Should run allow token', async () => {
         try {
-            const allowdToken = await sdk.allowToken(MOCK_TOKEN_ADDRESS, MOCK_ACCOUNT.address);
+            const allowdToken = await sdk.allowToken(
+                MOCK_TOKEN_ADDRESS,
+                MOCK_ACCOUNT.address
+            );
             expect(allowdToken).toEqual(MOCK_TOKEN_ADDRESS);
-        }catch(error:any){
+        } catch (error: any) {
             fail('The allowToken is not success:' + error.message);
         }
     });

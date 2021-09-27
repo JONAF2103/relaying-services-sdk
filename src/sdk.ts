@@ -135,14 +135,16 @@ export class DefaultRelayingServices implements RelayingServices {
             account = this.getAccountAddress();
         }
 
-        const smartWalletDeployVerifier = await new  this.web3Instance.eth.Contract(
-            DeployVerifier.abi,
-            this.contracts.addresses.smartWalletDeployVerifier
-        );
-        const smartWalletRelayVerifier = await new  this.web3Instance.eth.Contract(
-            RelayVerifier.abi,
-            this.contracts.addresses.smartWalletRelayVerifier
-        );
+        const smartWalletDeployVerifier =
+            await new this.web3Instance.eth.Contract(
+                DeployVerifier.abi,
+                this.contracts.addresses.smartWalletDeployVerifier
+            );
+        const smartWalletRelayVerifier =
+            await new this.web3Instance.eth.Contract(
+                RelayVerifier.abi,
+                this.contracts.addresses.smartWalletRelayVerifier
+            );
 
         try {
             const acceptToken =
