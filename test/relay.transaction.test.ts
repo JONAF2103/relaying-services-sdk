@@ -29,6 +29,7 @@ describe('Tests for smart wallet without being deployed', () => {
                 getCodeEmpty: true
             }) as any
         );
+        await sdk.initialize({});
     });
 
     it('Should fail to relay transaction', async () => {
