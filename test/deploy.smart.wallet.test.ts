@@ -1,7 +1,11 @@
 import { RelayingServices, SmartWallet } from '../src';
 import { MockRelayingServices, Web3Mock } from './mock';
 import Expect = jest.Expect;
-import { MOCK_SMART_WALLET_ADDRESS, MOCK_TOKEN_ADDRESS } from './constants';
+import {
+    MOCK_SMART_WALLET_ADDRESS,
+    MOCK_TOKEN_ADDRESS,
+    MOCK_TRANSACTION_HASH
+} from './constants';
 
 declare const expect: Expect;
 
@@ -60,5 +64,7 @@ describe('Tests for smart wallet without being deployed', () => {
         expect(smartWallet.address).toBe(MOCK_SMART_WALLET_ADDRESS);
         expect(smartWallet.index).toBe(0);
         expect(smartWallet.deployed).toBeTruthy();
+        expect(smartWallet.tokenAddress).toBe(MOCK_TOKEN_ADDRESS);
+        expect(smartWallet.deployTransaction).toBe(MOCK_TRANSACTION_HASH);
     });
 });
