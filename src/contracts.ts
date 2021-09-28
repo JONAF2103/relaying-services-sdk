@@ -2,7 +2,6 @@ import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
 import { RelayingServicesAddresses } from './interfaces';
 import { getContract, getContractAddresses, mergeConfiguration } from './utils';
-import { DEFAULT_NETWORK_ID } from './constants';
 import {
     DeployVerifier,
     RelayVerifier,
@@ -18,14 +17,13 @@ export class Contracts {
 
     constructor(
         web3Instance: Web3,
-        chainId?: number,
+        chainId: number,
         contractAddresses?: RelayingServicesAddresses
     ) {
         this.web3Instance = web3Instance;
         contractAddresses = contractAddresses ?? <RelayingServicesAddresses>{};
-        const contracts: RelayingServicesAddresses = getContractAddresses(
-            chainId ?? DEFAULT_NETWORK_ID
-        );
+        const contracts: RelayingServicesAddresses =
+            getContractAddresses(chainId);
         this.addresses = <RelayingServicesAddresses>(
             mergeConfiguration(contractAddresses, contracts)
         );
