@@ -35,6 +35,7 @@ describe('Tests for smart wallet without being deployed', () => {
     it('Should fail to relay transaction', async () => {
         try {
             await sdk.relayTransaction(transaction, smartWallet, 0);
+            fail('Relay transaction error: relay transaction could be fail.');
         } catch (error: any) {
             expect(error.message).toBe(
                 `Smart Wallet is not deployed or the address ${smartWallet.address} is not a smart wallet.`
