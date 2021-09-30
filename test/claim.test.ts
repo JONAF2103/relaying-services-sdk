@@ -12,7 +12,7 @@ describe('Tests for claim operation', () => {
         await sdk.initialize({});
     });
 
-    it('Should fail by not implemented error', async () => {
+    it('Should fail with a "NOT IMPLEMENTED" error', async () => {
         try {
             await sdk.claim({});
             fail('The claim will not implement in this version of SDK');
