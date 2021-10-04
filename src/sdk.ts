@@ -17,6 +17,7 @@ import {
     addressHasCode,
     getAbiItem,
     getContract,
+    getContractAddresses,
     mergeConfiguration
 } from './utils';
 import { ERC20Token } from './ERC20Token';
@@ -101,10 +102,11 @@ export class DefaultRelayingServices implements RelayingServices {
             }
             this.web3Instance.setProvider(provider);
             this.relayProvider = provider;
+            const chainId = await this.web3Instance.eth.getChainId();
             this.contracts = new Contracts(
                 this.web3Instance,
-                await this.web3Instance.eth.getChainId(),
-                contractAddresses
+                chainId,
+                contractAddresses ?? getContractAddresses(chainId)
             );
             console.debug('RelayingServicesSDK initialized correctly');
         }catch(error){
