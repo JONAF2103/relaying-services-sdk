@@ -10,11 +10,11 @@ import {
 } from '@rsksmart/rif-relay-contracts';
 
 export class Contracts {
-    protected web3Instance: Web3;
+    private web3Instance: Web3;
     public addresses: RelayingServicesAddresses;
-    protected smartWalletFactory: Contract;
-    protected smartWalletRelayVerifier: Contract;
-    protected smartWalletDeployVerifier: Contract;
+    private smartWalletFactory: Contract;
+    private smartWalletRelayVerifier: Contract;
+    private smartWalletDeployVerifier: Contract;
 
     constructor(
         web3Instance: Web3,

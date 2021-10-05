@@ -31,12 +31,12 @@ import { Contracts } from './contracts';
 
 export class DefaultRelayingServices implements RelayingServices {
     protected readonly web3Instance: Web3;
-    protected readonly account?: Account;
-    protected developmentAccounts: string[];
-    protected relayProvider: RelayProvider;
-    protected contracts: Contracts;
-    protected contractAddresses: RelayingServicesAddresses;
-    protected envelopingConfig: EnvelopingConfig;
+    private readonly account?: Account;
+    private developmentAccounts: string[];
+    private relayProvider: RelayProvider;
+    private contracts: Contracts;
+    private contractAddresses: RelayingServicesAddresses;
+    private envelopingConfig: EnvelopingConfig;
 
     constructor({
         rskHost,
