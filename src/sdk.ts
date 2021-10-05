@@ -33,10 +33,8 @@ export class DefaultRelayingServices implements RelayingServices {
     protected readonly web3Instance: Web3;
     private readonly account?: Account;
     private developmentAccounts: string[];
-    private relayProvider: RelayProvider;
-    private contracts: Contracts;
-    private contractAddresses: RelayingServicesAddresses;
-    private envelopingConfig: EnvelopingConfig;
+    protected relayProvider: RelayProvider;
+    protected contracts: Contracts;
 
     constructor({
         rskHost,
