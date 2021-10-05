@@ -4,7 +4,7 @@ import {
     EnvelopingConfig,
     EnvelopingTransactionDetails
 } from '@rsksmart/rif-relay-common';
-import { RelayingServicesAddresses, SmartWallet } from '../src/interfaces';
+import { RelayingServicesAddresses } from '../src/interfaces';
 import { Contracts } from '../src/contracts';
 import { AbiItem } from 'web3-utils';
 import {
@@ -223,4 +223,3 @@ export class MockRelayingServices extends DefaultRelayingServices {
         return tokenAddress;
     }
 }
-
