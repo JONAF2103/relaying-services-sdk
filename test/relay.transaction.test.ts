@@ -20,7 +20,7 @@ const smartWallet: SmartWallet = {
     deployed: true
 };
 
-describe('Tests for smart wallet without being deployed', () => {
+describe('Should fail to relay transaction when smart wallet hasn\'t been deployed', () => {
     let sdk: RelayingServices;
 
     beforeEach(async () => {

@@ -13,7 +13,7 @@ describe('Tests for is generate smart wallet', () => {
         await sdk.initialize({});
     });
 
-    it('Should return is deployed smart wallet', async () => {
+    it('Should generate a deployed smart wallet', async () => {
         const smallWalletIndex = 0;
         const smartWallet = await sdk.generateSmartWallet(smallWalletIndex);
         expect(smartWallet.deployed).toBeTruthy();

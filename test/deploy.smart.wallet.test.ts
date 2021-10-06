@@ -32,7 +32,7 @@ describe('Tests for smart wallet', () => {
                 MOCK_TOKEN_ADDRESS,
                 0
             );
-            fail('The smart wallet this not already deployed');
+            fail('Smart wallet deployment expected to fail, but it didn\'t');
         } catch (error: any) {
             expect(error.message).toBe('Smart Wallet already deployed');
         }
