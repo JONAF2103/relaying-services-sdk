@@ -148,8 +148,8 @@ describe('SDK not deployed', () => {
         expect(smartWallet.tokenAddress).toBe(MOCK_TOKEN_ADDRESS);
         expect(smartWallet.deployTransaction).toBe(MOCK_TRANSACTION_HASH);
     });
-    
-    it('Should fail to relay transaction', async () => {
+
+    it('Relay Transaction', async () => {
         const transaction: TransactionConfig = {
             from: MOCK_ADDRESS,
             to: MOCK_CONTRACT_ADDRESS,
