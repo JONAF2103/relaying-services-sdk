@@ -32,7 +32,7 @@ describe('Tests for is smart wallet without being deployed', () => {
         );
     });
 
-    it('Should return is not deployed smart wallet', async () => {
+    it('Should return false if the smart wallet is not deployed', async () => {
         const deployed = await sdk.isSmartWalletDeployed(
             MOCK_SMART_WALLET_ADDRESS
         );
