@@ -18,7 +18,7 @@ describe('Tests for get allow token', () => {
             expect(allowTokens.length).toBeGreaterThan(0);
             expect([]).toEqual(expect.arrayContaining(allowTokens));
         } catch (error) {
-            fail('The token is not allow');
+            fail('The allow token operation failed');
         }
     });
 });

@@ -15,7 +15,7 @@ describe('Tests for claim operation', () => {
     it('Should fail by not implemented error', async () => {
         try {
             await sdk.claim({});
-            fail('The claim will not implement in this version of SDK');
+            fail('The claim operation was expected to fail in this version of SDK, but it didn't');
         } catch (error: any) {
             expect(error.message).toBe(
                 'NOT IMPLEMENTED: this will be available with arbiter integration.'
