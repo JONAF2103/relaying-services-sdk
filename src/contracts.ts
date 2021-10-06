@@ -17,7 +17,7 @@ export class Contracts {
 
     constructor(
         web3Instance: Web3,
-        chainId?: number,
+        chainId: number,
         contractAddresses?: RelayingServicesAddresses
     ) {
         this.web3Instance = web3Instance;

@@ -16,7 +16,7 @@ describe('Tests for get allow token', () => {
         try {
             const allowTokens = await sdk.getAllowedTokens();
             expect(allowTokens.length).toBeGreaterThan(0);
-            expect.arrayContaining(allowTokens);
+            expect([]).toEqual(expect.arrayContaining(allowTokens));
         } catch (error) {
             fail('The token is not allow');
         }
