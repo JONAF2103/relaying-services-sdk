@@ -106,22 +106,6 @@ describe('SDK', () => {
         }
     });
 
-    it('Deploy Smart Wallet', async () => {
-        const smartWallet: SmartWallet = await sdk.deploySmartWallet(
-            {
-                address: MOCK_SMART_WALLET_ADDRESS,
-                index: 0,
-                deployed: true
-            },
-            MOCK_TOKEN_ADDRESS
-        );
-        expect(smartWallet.address).toBe(MOCK_SMART_WALLET_ADDRESS);
-        expect(smartWallet.index).toBe(0);
-        expect(smartWallet.deployed).toBeTruthy();
-        expect(smartWallet.tokenAddress).toBe(MOCK_TOKEN_ADDRESS);
-        expect(smartWallet.deployTransaction).toBe(MOCK_TRANSACTION_HASH);
-    });
-
     it('Is Smart Wallet Deployed', async () => {
         const deployed = await sdk.isSmartWalletDeployed(
             MOCK_SMART_WALLET_ADDRESS
@@ -149,6 +133,22 @@ describe('SDK not deployed', () => {
         expect(deployed).toBeFalsy();
     });
 
+    it('Deploy Smart Wallet', async () => {
+        const smartWallet: SmartWallet = await sdk.deploySmartWallet(
+            {
+                address: MOCK_SMART_WALLET_ADDRESS,
+                index: 0,
+                deployed: true
+            },
+            MOCK_TOKEN_ADDRESS
+        );
+        expect(smartWallet.address).toBe(MOCK_SMART_WALLET_ADDRESS);
+        expect(smartWallet.index).toBe(0);
+        expect(smartWallet.deployed).toBeTruthy();
+        expect(smartWallet.tokenAddress).toBe(MOCK_TOKEN_ADDRESS);
+        expect(smartWallet.deployTransaction).toBe(MOCK_TRANSACTION_HASH);
+    });
+    
     it('Should fail to relay transaction', async () => {
         const transaction: TransactionConfig = {
             from: MOCK_ADDRESS,
