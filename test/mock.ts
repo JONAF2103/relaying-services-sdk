@@ -174,14 +174,6 @@ export class MockRelayProvider {
         });
         return Promise.resolve(MOCK_TRANSACTION_HASH);
     }
-    async getAllowedTokens() {
-        console.debug('getAllowedTokens');
-        return {
-            call: () => {
-                return [MOCK_SMART_WALLET_ADDRESS];
-            }
-        };
-    }
     async _ethSendTransaction() {
         console.debug('_ethSendTransaction');
         return {
