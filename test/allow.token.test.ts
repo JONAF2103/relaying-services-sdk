@@ -21,7 +21,7 @@ describe('Tests for allow token', () => {
             );
             expect(allowedToken).toEqual(MOCK_TOKEN_ADDRESS);
         } catch (error: any) {
-            fail('The allowToken is not success:' + error.message);
+            fail('The allow token call was unsuccessful:' + error.message);
         }
     });
 });
