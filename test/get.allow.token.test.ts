@@ -1,4 +1,5 @@
 import { RelayingServices } from '../src';
+import { MOCK_ADDRESS } from './constants';
 import { MockRelayingServices } from './mock';
 import Expect = jest.Expect;
 
@@ -16,7 +17,7 @@ describe('Tests for get allow token', () => {
         try {
             const allowTokens = await sdk.getAllowedTokens();
             expect(allowTokens.length).toBeGreaterThan(0);
-            expect([]).toEqual(expect.arrayContaining(allowTokens));
+            expect([MOCK_ADDRESS]).toEqual(expect.arrayContaining(allowTokens));
         } catch (error) {
             fail('The allow token operation failed');
         }
