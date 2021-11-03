@@ -31,7 +31,7 @@ export function getContract(
 export function getContractAddresses(
     chainId: number
 ): RelayingServicesAddresses {
-    return ContractAddresses[chainId] || <RelayingServicesAddresses>{};
+    return ContractAddresses[chainId];
 }
 
 export function mergeConfiguration(
