@@ -24,9 +24,11 @@ export class Contracts {
         contractAddresses = contractAddresses ?? <RelayingServicesAddresses>{};
         const contracts: RelayingServicesAddresses =
             getContractAddresses(chainId);
-        if(!contracts){
-            throw new Error('RelayingServicesSDK contracts not find for the specified network id.')
-        } 
+        if (!contracts) {
+            throw new Error(
+                'RelayingServicesSDK contracts not find for the specified network id.'
+            );
+        }
         this.addresses = <RelayingServicesAddresses>(
             mergeConfiguration(contractAddresses, contracts)
         );
