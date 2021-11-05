@@ -35,7 +35,7 @@ export function getContractAddresses(
     const contracts = ContractAddresses[chainId];
     if (!contracts) {
         throw new ContractError(
-            `ContractError: contracts not find for the specified network id ${chainId}.`
+            `No contracts found for the specified network id ${chainId}.`
         );
     }
     return contracts;
