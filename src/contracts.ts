@@ -7,6 +7,7 @@ import {
     RelayVerifier,
     SmartWalletFactory
 } from '@rsksmart/rif-relay-contracts';
+import { ContractError } from './ContractError';
 
 export class Contracts {
     private web3Instance: Web3;
@@ -22,12 +23,17 @@ export class Contracts {
     ) {
         this.web3Instance = web3Instance;
         contractAddresses = contractAddresses ?? <RelayingServicesAddresses>{};
-        const contracts: RelayingServicesAddresses =
-            getContractAddresses(chainId);
-        if (!contracts) {
-            throw new Error(
-                'RelayingServicesSDK contracts not find for the specified network id.'
-            );
+        let contracts: RelayingServicesAddresses = <
+            RelayingServicesAddresses
+        >{};
+        try {
+            contracts = getContractAddresses(chainId);
+        } catch (error: any) {
+            if (error instanceof ContractError) {
+                console.warn(error);
+            } else {
+                throw error;
+            }
         }
         this.addresses = <RelayingServicesAddresses>(
             mergeConfiguration(contractAddresses, contracts)
