@@ -1,6 +1,6 @@
 export class ContractError extends Error {
     constructor(msg: string) {
-        super(msg);
+        super(`ContractError: ${msg}`);
 
         Object.setPrototypeOf(this, ContractError.prototype);
     }
