@@ -139,6 +139,5 @@ export {
     RelayingServices,
     DefaultRelayingServices,
     RelayingServicesConfiguration,
-    SmartWallet,
-    EnvelopingTransactionDetails
+    SmartWallet
 };
