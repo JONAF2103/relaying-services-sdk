@@ -95,4 +95,4 @@ interface RelayingServices {
      */
     estimateMaxPossibleRelayGasWithLinearFit(destinationContract: string, smartWalletAddress: string, tokenFees: string, abiEncodedTx: string, relayWorker: string): Promise<string>;
 }
-export { RelayingServices, DefaultRelayingServices, RelayingServicesConfiguration, SmartWallet };
+export { RelayingServices, DefaultRelayingServices, RelayingServicesConfiguration, SmartWallet, EnvelopingTransactionDetails };
