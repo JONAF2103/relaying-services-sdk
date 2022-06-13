@@ -13,10 +13,8 @@ You can use this library once you have it installed on your project. You have a 
 ways to installing this dependency:
 
 * **Use a release version:** just install this using the install command for node `npm i --save @rsksmart/relaying-services-sdk`.
-* **Use the distributable directly from the repository:** modify your `package.json` file
-  to add this line `"@rsksmart/relaying-services-sdk": "https://github.com/JONAF2103/relaying-services-sdk",`
-* **Use the development version directly from your changes:** clone this repository next to your project and modify your `package.json` file
-  to add this line `"@rsksmart/relaying-services-sdk": "../relaying-services-sdk",`
+* **Use the development version directly from your changes:** 
+clone this repository inside your project's root folder and use the `npm link` mechanism (https://docs.npmjs.com/cli/v8/commands/npm-link) to add it to your project.
   
 After you install the library you can import the RelayingServices interface and the DefaultRelayingServices implementation
 to start using the SDK.
@@ -25,7 +23,6 @@ to start using the SDK.
 
 1. Clone this repository using `git clone https://github.com/JONAF2103/relaying-services-sdk.git`
 2. Install it using `npm install`
-3. Run `npm run switchPostInstall enable` to enable post install hooks and run again `npm install`
 4. Make your changes and after all the tests and checks are ok you can run `npm run dist` to generate a distributable version
 5. Push your new version into a new branch and create a PR
 
@@ -36,8 +33,7 @@ to start using the SDK.
 
 #### For Github
 
-1. Run `npm pack` to generate the tarball to be publish as release on github.
-2. Generate a new release on github and upload the generated tarball.
+1. Create a new tag with the new version (from `package.json`) and GitHub actions will update NPM
 
 #### For NPM
 
