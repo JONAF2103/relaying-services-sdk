@@ -1,17 +1,17 @@
 /**
  * It represents an SmartWallet, contains the index and the address of the Smart Wallet
  */
-import { TransactionConfig, TransactionReceipt } from 'web3-core';
+import { TransactionReceipt } from 'web3-core';
 import { DefaultRelayingServices } from './sdk';
 import {
+    RelayGasEstimationOptions,
     RelayingServicesAddresses,
     RelayingServicesConfiguration,
-    SmartWallet
+    RelayingTransactionOptions,
+    SmartWallet,
+    SmartWalletDeploymentOptions
 } from './interfaces';
-import {
-    EnvelopingConfig,
-    EnvelopingTransactionDetails
-} from '@rsksmart/rif-relay-common';
+import { EnvelopingConfig } from '@rsksmart/rif-relay-common';
 
 interface RelayingServices {
     /**
@@ -55,8 +55,7 @@ interface RelayingServices {
      */
     deploySmartWallet(
         smartWallet: SmartWallet,
-        tokenAddress?: string,
-        tokenAmount?: number
+        options?: SmartWalletDeploymentOptions
     ): Promise<SmartWallet>;
 
     /**
@@ -69,10 +68,7 @@ interface RelayingServices {
      * will be subsidized.
      */
     relayTransaction(
-        unsignedTx: TransactionConfig,
-        smartWallet: SmartWallet,
-        tokenAmount?: number,
-        transactionDetails?: Partial<EnvelopingTransactionDetails>
+        options: RelayingTransactionOptions
     ): Promise<TransactionReceipt>;
 
     /**
@@ -109,12 +105,11 @@ interface RelayingServices {
     /**
      * It executes a estimate max possible relay gas to get a number value
      *
-     * @param smartWallet address create the transaction details for forwarder transaction
+     * @param trxDetails details of the transaction to be used to calculate gas
      * @param relayWorker the realy worker contract address
      */
     estimateMaxPossibleRelayGas(
-        SmartWallet: SmartWallet,
-        relayWorker: string
+        options: RelayGasEstimationOptions
     ): Promise<string>;
 
     /**
@@ -127,11 +122,7 @@ interface RelayingServices {
      * @param relayWorker the realy worker contract address
      */
     estimateMaxPossibleRelayGasWithLinearFit(
-        destinationContract: string,
-        smartWalletAddress: string,
-        tokenFees: string,
-        abiEncodedTx: string,
-        relayWorker: string
+        options: RelayGasEstimationOptions
     ): Promise<string>;
 }
 
@@ -139,5 +130,8 @@ export {
     RelayingServices,
     DefaultRelayingServices,
     RelayingServicesConfiguration,
-    SmartWallet
+    SmartWallet,
+    RelayingTransactionOptions,
+    RelayGasEstimationOptions,
+    SmartWalletDeploymentOptions
 };

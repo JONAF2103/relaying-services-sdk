@@ -1,5 +1,7 @@
+import Web3 from 'web3';
 import { TransactionConfig } from 'web3-core';
 import { RelayingServices, SmartWallet } from '../src';
+import { RelayingTransactionOptions } from '../src/interfaces';
 import {
     MOCK_ACCOUNT,
     MOCK_ADDRESS,
@@ -8,12 +10,12 @@ import {
     MOCK_TOKEN_ADDRESS,
     MOCK_TRANSACTION_HASH
 } from './constants';
-import { MockRelayingServices, Web3Mock } from './mock';
+import { MockRelayingServices, Web3EthMock, Web3UtilsMock } from './mock';
 import Expect = jest.Expect;
 
 declare const expect: Expect;
 
-describe('SDK', () => {
+describe('Deployed SDK tests', () => {
     let sdk: RelayingServices;
 
     beforeEach(async () => {
@@ -21,7 +23,7 @@ describe('SDK', () => {
         await sdk.initialize({});
     });
 
-    it('Claim', async () => {
+    it('Should perform a claim operation', async () => {
         try {
             await sdk.claim({});
             fail(
@@ -34,7 +36,7 @@ describe('SDK', () => {
         }
     });
 
-    it('Allow Token', async () => {
+    it('Should allow a token', async () => {
         try {
             const allowedToken = await sdk.allowToken(
                 MOCK_TOKEN_ADDRESS,
@@ -46,7 +48,7 @@ describe('SDK', () => {
         }
     });
 
-    it('Get Allow Token', async () => {
+    it('Should get the allowed tokens', async () => {
         try {
             const allowTokens = await sdk.getAllowedTokens();
             expect(allowTokens.length).toBeGreaterThan(0);
@@ -56,7 +58,7 @@ describe('SDK', () => {
         }
     });
 
-    it('Is Allow Token', async () => {
+    it('Should return True if provided token is allowed', async () => {
         try {
             const allowTokens = await sdk.isAllowedToken(MOCK_TOKEN_ADDRESS);
             expect(allowTokens).toBeTruthy();
@@ -65,40 +67,41 @@ describe('SDK', () => {
         }
     });
 
-    it('Smart Wallet', async () => {
+    it('Should fail when deploying a Smart Wallet', async () => {
         try {
             await sdk.deploySmartWallet(
                 {
                     address: MOCK_SMART_WALLET_ADDRESS,
-                    index: 0,
-                    deployed: true
+                    index: 0
                 },
-                MOCK_TOKEN_ADDRESS
+                {
+                    tokenAddress: MOCK_TOKEN_ADDRESS
+                }
             );
-            fail('The small wallet this not already deployed');
+            fail('The smart wallet is already deployed');
         } catch (error: any) {
             expect(error.message).toBe('Smart Wallet already deployed');
         }
     });
 
-    it('Generate Smart Wallet', async () => {
+    it('Should generate a Smart Wallet', async () => {
         const smallWalletIndex = 0;
         const smartWallet = await sdk.generateSmartWallet(smallWalletIndex);
-        expect(smartWallet.deployed).toBeTruthy();
         expect(smartWallet.address).toEqual(MOCK_SMART_WALLET_ADDRESS);
         expect(smartWallet.index).toEqual(smallWalletIndex);
     });
 
-    it('Deployed Smart Wallet already deployed', async () => {
+    it('Should not let deploy a Smart Wallet that is already deployed', async () => {
         try {
             await sdk.deploySmartWallet(
                 {
                     address: MOCK_SMART_WALLET_ADDRESS,
-                    index: 0,
-                    deployed: true
+                    index: 0
                 },
-                MOCK_TOKEN_ADDRESS,
-                0
+                {
+                    tokenAddress: MOCK_TOKEN_ADDRESS,
+                    tokenAmount: 0
+                }
             );
             fail("Smart wallet deployment expected to fail, but it didn't");
         } catch (error: any) {
@@ -106,7 +109,7 @@ describe('SDK', () => {
         }
     });
 
-    it('Is Smart Wallet Deployed', async () => {
+    it('Should return true if Smart Wallet is deployed', async () => {
         const deployed = await sdk.isSmartWalletDeployed(
             MOCK_SMART_WALLET_ADDRESS
         );
@@ -114,54 +117,68 @@ describe('SDK', () => {
     });
 });
 
-describe('SDK not deployed', () => {
+describe('SDK not deployed tests', () => {
     let sdk: RelayingServices;
 
     beforeEach(async () => {
-        sdk = new MockRelayingServices(
-            new Web3Mock({
-                getCodeEmpty: true
-            }) as any
-        );
+        const web3 = new Web3();
+        web3.eth = new Web3EthMock({
+            getCodeEmpty: true
+        }) as any;
+        web3.utils = new Web3UtilsMock({
+            getCodeEmpty: true
+        }) as any;
+
+        sdk = new MockRelayingServices(web3);
         await sdk.initialize({});
     });
 
-    it('Is Smart Wallet not deployed', async () => {
+    it('Should return False if Smart Wallet is not deployed', async () => {
         const deployed = await sdk.isSmartWalletDeployed(
             MOCK_SMART_WALLET_ADDRESS
         );
         expect(deployed).toBeFalsy();
     });
 
-    it('Deploy Smart Wallet', async () => {
+    it('Should deploy a Smart Wallet', async () => {
         const smartWallet: SmartWallet = await sdk.deploySmartWallet(
             {
                 address: MOCK_SMART_WALLET_ADDRESS,
-                index: 0,
-                deployed: true
+                index: 0
             },
-            MOCK_TOKEN_ADDRESS
+            {
+                tokenAddress: MOCK_TOKEN_ADDRESS
+            }
         );
         expect(smartWallet.address).toBe(MOCK_SMART_WALLET_ADDRESS);
         expect(smartWallet.index).toBe(0);
-        expect(smartWallet.deployed).toBeTruthy();
-        expect(smartWallet.tokenAddress).toBe(MOCK_TOKEN_ADDRESS);
-        expect(smartWallet.deployTransaction).toBe(MOCK_TRANSACTION_HASH);
+        expect(smartWallet.deployment.tokenAddress).toBe(MOCK_TOKEN_ADDRESS);
+        expect(smartWallet.deployment.deployTransaction).toBe(
+            MOCK_TRANSACTION_HASH
+        );
     });
 
-    it('Relay Transaction', async () => {
-        const transaction: TransactionConfig = {
+    it('Should fail when relaying a Transaction', async () => {
+        const smartWallet: SmartWallet = {
+            address: MOCK_SMART_WALLET_ADDRESS,
+            index: 0,
+            deployment: { deployTransaction: '0', tokenAddress: '0' }
+        };
+
+        const unsignedTx: TransactionConfig = {
             from: MOCK_ADDRESS,
             to: MOCK_CONTRACT_ADDRESS,
             value: 1
         };
-        const smartWallet: SmartWallet = {
-            address: MOCK_SMART_WALLET_ADDRESS,
-            index: 0,
-            deployed: true
+
+        const options: RelayingTransactionOptions = {
+            smartWallet,
+            unsignedTx,
+            tokenAmount: 0
         };
+
         try {
-            await sdk.relayTransaction(transaction, smartWallet, 0);
+            await sdk.relayTransaction(options);
             fail('Relay transaction should have failed.');
         } catch (error: any) {
             expect(error.message).toBe(
