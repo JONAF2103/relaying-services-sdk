@@ -1,10 +1,5 @@
 import { RelayingServices } from './index';
-import {
-    Account,
-    HttpProvider,
-    TransactionConfig,
-    TransactionReceipt
-} from 'web3-core';
+import { Account, HttpProvider, TransactionReceipt } from 'web3-core';
 import {
     EnvelopingConfig,
     EnvelopingTransactionDetails,
@@ -16,47 +11,32 @@ import {
 } from '@rsksmart/rif-relay-client';
 import Web3 from 'web3';
 import { DeployVerifier, RelayVerifier } from '@rsksmart/rif-relay-contracts';
-import {
-    addressHasCode,
-    getContract,
-    getRevertReason,
-    mergeConfiguration
-} from './utils';
-import { ERC20Token } from './ERC20Token';
+import { addressHasCode, getRevertReason, mergeConfiguration } from './utils';
 import { ZERO_ADDRESS } from './constants';
 import {
+    RelayGasEstimationOptions,
     RelayingServicesAddresses,
-    RelayingServicesConfiguration,
-    SmartWallet
+    RelayingTransactionOptions,
+    SmartWallet,
+    SmartWalletDeploymentOptions
 } from './interfaces';
 import { Contracts } from './contracts';
-import { toBN } from 'web3-utils';
+import { toBN, toHex } from 'web3-utils';
+import log, { LogLevelNumbers } from 'loglevel';
 
 export class DefaultRelayingServices implements RelayingServices {
-    protected readonly web3Instance: Web3;
+    private readonly web3Instance: Web3;
     private readonly account?: Account;
-    private developmentAccounts: string[];
-    protected relayProvider: RelayProvider;
-    protected contracts: Contracts;
-    protected contractAddresses: RelayingServicesAddresses;
-    protected envelopingConfig: EnvelopingConfig;
+    private developmentAccounts: string[]; //code should be the same for develop and prod
+    private relayProvider: RelayProvider;
+    private contracts: Contracts;
+    private contractAddresses: RelayingServicesAddresses;
+    private envelopingConfig: EnvelopingConfig;
 
     private txId = 777;
 
-    // TODO: Change constructor to receive web3Instance | webProvider | rskHost
-    // we don't need the configuration here
-    constructor({
-        rskHost,
-        account,
-        web3Provider,
-        web3Instance
-    }: RelayingServicesConfiguration) {
-        this.web3Instance = web3Instance
-            ? web3Instance
-            : web3Provider
-            ? // TODO: remove any
-              new Web3(web3Provider as any)
-            : new Web3(rskHost);
+    constructor(web3: Web3 | Web3Provider | string, account?: Account) {
+        this.web3Instance = web3 instanceof Web3 ? web3 : new Web3(web3);
         this.account = account;
     }
 
@@ -89,15 +69,17 @@ export class DefaultRelayingServices implements RelayingServices {
                 relayHubAddress ?? this.contracts.addresses.relayHub;
             return resolvedConfig;
         } catch (error) {
-            console.log(error);
+            log.log(error);
         }
     }
 
     async initialize(
         envelopingConfig: Partial<EnvelopingConfig>,
-        contractAddresses?: RelayingServicesAddresses
+        contractAddresses?: RelayingServicesAddresses,
+        opts?: { loglevel: number }
     ): Promise<void> {
         try {
+            this.setLogLevel(opts.loglevel);
             this.contracts = new Contracts(
                 this.web3Instance,
                 await this.web3Instance.eth.getChainId(),
@@ -123,14 +105,14 @@ export class DefaultRelayingServices implements RelayingServices {
             }
             this.web3Instance.setProvider(provider);
             this.relayProvider = provider;
-            console.debug('RelayingServicesSDK initialized correctly');
+            log.debug('RelayingServicesSDK initialized correctly');
         } catch (error) {
-            console.error('RelayingServicesSDK fail to initialize', error);
+            log.error('RelayingServicesSDK fail to initialize', error);
         }
     }
 
     async allowToken(tokenAddress: string, account?: string): Promise<string> {
-        console.debug('allowToken Params', {
+        log.debug('allowToken Params', {
             tokenAddress,
             account
         });
@@ -149,44 +131,33 @@ export class DefaultRelayingServices implements RelayingServices {
                 this.contracts.addresses.smartWalletRelayVerifier
             );
 
+        let deployVerifierCheckpoint;
         try {
-            const acceptToken =
+            const deployVerifierAcceptToken =
                 smartWalletDeployVerifier.methods.acceptToken(tokenAddress);
-            console.log(acceptToken);
-            await acceptToken.send({ from: account });
-        } catch (error: any) {
-            console.log('Error');
-            console.log(error);
-            const reason = await getRevertReason(error.receipt.transactionHash);
-            console.error(
-                'Error adding token with address ' +
-                    tokenAddress +
-                    ' to allowed tokens on smart wallet deploy verifier',
-                reason
-            );
-            throw error;
-        }
-        try {
+            log.info(deployVerifierAcceptToken);
+            await deployVerifierAcceptToken.send({ from: account });
+            deployVerifierCheckpoint = true;
+
             await smartWalletRelayVerifier.methods
                 .acceptToken(tokenAddress)
                 .send({ from: account });
         } catch (error: any) {
-            console.log(error);
+            log.error(error);
             const reason = await getRevertReason(error.receipt.transactionHash);
-            console.error(
-                'Error adding token with address ' +
-                    tokenAddress +
-                    ' to allowed tokens on smart wallet relay verifier',
+            const errorSource = deployVerifierCheckpoint ? 'deploy' : 'relay';
+            log.error(
+                `Error adding token with address ${tokenAddress} to allowed tokens on smart wallet ${errorSource} verifier`,
                 reason
             );
             throw error;
         }
-        console.debug('Tokens allowed successfully!');
+        log.debug('Tokens allowed successfully!');
         return tokenAddress;
     }
 
     async isAllowedToken(tokenAddress: string): Promise<boolean> {
-        console.debug('isAllowedToken Params', {
+        log.debug('isAllowedToken Params', {
             tokenAddress
         });
         const relayVerifierContract =
@@ -221,7 +192,7 @@ export class DefaultRelayingServices implements RelayingServices {
     }
 
     async claim(commitmentReceipt: any): Promise<void> {
-        console.debug('claim Params', {
+        log.debug('claim Params', {
             commitmentReceipt
         });
         throw new Error(
@@ -231,84 +202,71 @@ export class DefaultRelayingServices implements RelayingServices {
 
     async deploySmartWallet(
         smartWallet: SmartWallet,
-        tokenAddress?: string,
-        tokenAmount?: number
+        options?: SmartWalletDeploymentOptions
     ): Promise<SmartWallet> {
-        console.debug('deploySmartWallet Params', {
+        log.debug('deploySmartWallet Params', {
             smartWallet,
-            tokenAddress,
-            tokenAmount
+            options
         });
-        tokenAmount = tokenAmount ?? 0;
-        console.debug('Checking if the wallet already exists');
-        const smartWalletDeployed = await addressHasCode(
-            this.web3Instance,
-            smartWallet.address
-        );
+        const { address, index } = smartWallet;
+        const {
+            tokenAddress,
+            tokenAmount,
+            recovererAddress,
+            onlyPreferredRelays,
+            callVerifier,
+            callForwarder
+        } = options;
 
-        if (!smartWalletDeployed) {
-            if (tokenAddress) {
-                const token = getContract(
-                    this.web3Instance,
-                    ERC20Token.getAbi(),
-                    tokenAddress
-                );
+        log.debug('Checking if the wallet already exists');
+        const isSmartWalletDeployed = await this.isSmartWalletDeployed(address);
 
-                const balance = await token.methods
-                    .balanceOf(smartWallet.address)
-                    .call();
-
-                if (balance <= 0) {
-                    console.warn(
-                        "Smart Wallet doesn't have funds so this will be a subsidized deploy."
-                    );
-                }
-            }
-
-            console.debug(
-                'Deploying smart wallet for address',
-                smartWallet.address
-            );
-            const txDetails = <EnvelopingTransactionDetails>{
-                from: this._getAccountAddress(),
-                to: ZERO_ADDRESS,
-                callVerifier:
-                    this.contracts.addresses.smartWalletDeployVerifier,
-                callForwarder: this.contracts.addresses.smartWalletFactory,
-                tokenContract: tokenAddress,
-                tokenAmount: tokenAmount.toString(),
-                data: '0x',
-                index: smartWallet.index.toString(),
-                recoverer: ZERO_ADDRESS,
-                isSmartWalletDeploy: true,
-                onlyPreferredRelays: true,
-                smartWalletAddress: smartWallet.address
-            };
-
-            const transactionHash = await this.relayProvider.deploySmartWallet(
-                txDetails
-            );
-
-            console.debug(
-                'Smart wallet successfully deployed',
-                transactionHash
-            );
-
-            smartWallet.deployTransaction = transactionHash;
-            smartWallet.deployed = true;
-            smartWallet.tokenAddress = tokenAddress;
-            return smartWallet;
-        } else {
+        if (isSmartWalletDeployed) {
             throw new Error('Smart Wallet already deployed');
         }
+
+        log.debug('Deploying smart wallet for address', address);
+
+        const txDetails: EnvelopingTransactionDetails = {
+            from: this._getAccountAddress(),
+            to: ZERO_ADDRESS,
+            callVerifier:
+                callVerifier ??
+                this.contracts.addresses.smartWalletDeployVerifier,
+            callForwarder:
+                callForwarder ?? this.contracts.addresses.smartWalletFactory,
+            tokenContract: tokenAddress ?? ZERO_ADDRESS,
+            tokenAmount: tokenAmount ? tokenAmount.toString() : '0',
+            data: '0x',
+            index: index.toString(),
+            recoverer: recovererAddress ?? ZERO_ADDRESS,
+            isSmartWalletDeploy: true,
+            onlyPreferredRelays: onlyPreferredRelays || true,
+            smartWalletAddress: address
+        };
+
+        const transactionHash = await this.relayProvider.deploySmartWallet(
+            txDetails
+        );
+
+        log.debug('Smart wallet successfully deployed', transactionHash);
+
+        return {
+            deployment: {
+                deployTransaction: transactionHash,
+                tokenAddress
+            },
+            address,
+            index
+        };
     }
 
     async generateSmartWallet(smartWalletIndex: number): Promise<SmartWallet> {
-        console.debug('generateSmartWallet Params', {
+        log.debug('generateSmartWallet Params', {
             smartWalletIndex
         });
 
-        console.debug('Generating computed address for smart wallet');
+        log.debug('Generating computed address for smart wallet');
 
         const smartWalletFactory = this.contracts.getSmartWalletFactory();
 
@@ -334,139 +292,183 @@ export class DefaultRelayingServices implements RelayingServices {
         };
     }
 
-    async isSmartWalletDeployed(smartWalletAddress: string): Promise<boolean> {
-        console.debug('isSmartWalletDeployed Params', {
+    isSmartWalletDeployed(smartWalletAddress: string): Promise<boolean> {
+        log.debug('isSmartWalletDeployed Params', {
             smartWalletAddress
         });
-        return await addressHasCode(this.web3Instance, smartWalletAddress);
+        return addressHasCode(this.web3Instance, smartWalletAddress);
     }
 
-    // TODO: we may want to change this method signature to use one single object to have a more flexible signature.
     async relayTransaction(
-        unsignedTx: TransactionConfig,
-        smartWallet: SmartWallet,
-        tokenAmount?: number,
-        transactionDetails?: Partial<EnvelopingTransactionDetails>
+        options: RelayingTransactionOptions
     ): Promise<TransactionReceipt> {
-        console.debug('relayTransaction Params', {
+        log.debug('relayTransaction Params', {
+            options
+        });
+
+        const {
             unsignedTx,
             smartWallet,
             tokenAmount,
-            transactionDetails
-        });
-        console.debug('Checking if the wallet exists');
-        if (await addressHasCode(this.web3Instance, smartWallet.address)) {
-            const jsonRpcPayload = {
-                jsonrpc: '2.0',
-                id: ++this.txId,
-                method: 'eth_sendTransaction',
-                params: [
-                    {
-                        from: this._getAccountAddress(),
-                        to: smartWallet.tokenAddress,
-                        value: '0',
-                        relayHub: this.contracts.addresses.relayHub,
-                        callVerifier:
-                            this.contracts.addresses.smartWalletRelayVerifier,
-                        callForwarder: smartWallet.address,
-                        data: unsignedTx.data,
-                        tokenContract: smartWallet.tokenAddress,
-                        tokenAmount: await this.web3Instance.utils.toWei(
-                            tokenAmount.toString()
-                        ),
-                        onlyPreferredRelays: true,
-                        ...transactionDetails
-                    }
-                ]
-            };
-            const transactionReceipt: TransactionReceipt = await new Promise(
-                (resolve, reject) => {
-                    this.relayProvider._ethSendTransaction(
-                        jsonRpcPayload,
-                        async (error: Error, jsonrpc: any) => {
-                            if (error) {
-                                reject(error);
-                            }
-                            const recipient =
-                                await web3.eth.getTransactionReceipt(
-                                    jsonrpc.result
-                                );
-                            resolve(recipient);
-                        }
-                    );
-                }
-            );
+            transactionDetails,
+            value,
+            onlyPreferredRelays,
+            tokenAddress
+        } = options;
 
-            if (!transactionReceipt.status) {
-                const errorMessage = 'Error relaying transaction';
-                console.debug(errorMessage, transactionReceipt);
-                throw new Error(errorMessage);
-            }
-            return transactionReceipt;
+        log.debug('Checking if the wallet exists');
+
+        const { address } = smartWallet;
+        const isSmartWalletDeployed = await this.isSmartWalletDeployed(address);
+
+        if (!isSmartWalletDeployed) {
+            throw new Error(
+                `Smart Wallet is not deployed or the address ${address} is not a smart wallet.`
+            );
         }
-        throw new Error(
-            `Smart Wallet is not deployed or the address ${smartWallet.address} is not a smart wallet.`
+
+        const jsonRpcPayload = {
+            jsonrpc: '2.0',
+            id: ++this.txId,
+            method: 'eth_sendTransaction',
+            params: [
+                {
+                    from: this._getAccountAddress(),
+                    to: tokenAddress,
+                    value: value ? value.toString() : '0',
+                    relayHub: this.contracts.addresses.relayHub,
+                    callVerifier:
+                        this.contracts.addresses.smartWalletRelayVerifier,
+                    callForwarder: address,
+                    data: unsignedTx.data,
+                    tokenContract: tokenAddress,
+                    tokenAmount: await this.web3Instance.utils.toWei(
+                        tokenAmount ? tokenAmount.toString() : '0'
+                    ),
+                    onlyPreferredRelays: onlyPreferredRelays ?? true,
+                    ...transactionDetails
+                }
+            ]
+        };
+
+        //we should return the transaction hash. let the user decide to wait.
+        const transactionReceipt: TransactionReceipt = await new Promise(
+            (resolve, reject) => {
+                this.relayProvider._ethSendTransaction(
+                    jsonRpcPayload,
+                    async (error: Error, jsonrpc: any) => {
+                        if (error) {
+                            reject(error);
+                        }
+                        const recipient = await web3.eth.getTransactionReceipt(
+                            jsonrpc.result
+                        );
+                        resolve(recipient);
+                    }
+                );
+            }
         );
+
+        if (!transactionReceipt.status) {
+            const errorMessage = 'Error relaying transaction';
+            log.debug(errorMessage, transactionReceipt);
+            throw new Error(errorMessage);
+        }
+        return transactionReceipt;
     }
 
-    async estimateMaxPossibleRelayGas(
-        smartWallet: SmartWallet,
-        relayWorker: string
-    ): Promise<string> {
-        console.debug('estimateMaxPossibleRelayGas Params', {
-            smartWallet
-        });
-        const gasPrice = toBN(
-            await this.relayProvider.relayClient._calculateGasPrice()
-        );
-        const tokenAmount = await this.web3Instance.utils.toWei('1');
+    async estimateMaxPossibleRelayGas(options: RelayGasEstimationOptions) {
+        /* TODO: WE could check that there are some parameters according with the type of estimation we are doing
+         * (e.g.: if it's not a deployment, the user cannot specify the index and the recoverer or
+         *  if it's not a deployment the destination contract is mandatory)
+         */
+        const {
+            destinationContract,
+            smartWalletAddress,
+            tokenFees,
+            abiEncodedTx,
+            relayWorker,
+            tokenAddress,
+            onlyPreferredRelays,
+            callVerifier,
+            isSmartWalletDeploy,
+            callForwarder,
+            index,
+            recoverer
+        } = options;
 
-        const trxDetails: EnvelopingTransactionDetails = {
+        const relayClient = this.relayProvider.relayClient;
+        const tokenAmount = this.web3Instance.utils.toWei(tokenFees);
+        const callForwarderValue =
+            callForwarder ||
+            (isSmartWalletDeploy
+                ? this.contracts.addresses.smartWalletFactory
+                : smartWalletAddress);
+        const callVerifierValue =
+            callVerifier ||
+            (isSmartWalletDeploy
+                ? this.contracts.addresses.smartWalletDeployVerifier
+                : this.contracts.addresses.smartWalletRelayVerifier);
+
+        let trxDetails: EnvelopingTransactionDetails = {
             from: this._getAccountAddress(),
-            to: ZERO_ADDRESS.toString(),
+            to: destinationContract || ZERO_ADDRESS,
             value: '0',
             relayHub: this.contracts.addresses.relayHub,
-            callVerifier: this.contracts.addresses.smartWalletRelayVerifier,
-            callForwarder: this.contracts.addresses.smartWalletFactory,
-            data: '0x',
-            index: smartWallet.index.toString(),
-            tokenContract: this.contracts.addresses.testToken,
-            tokenAmount: tokenAmount,
-            onlyPreferredRelays: true,
-            isSmartWalletDeploy: true,
-            smartWalletAddress: smartWallet.address,
-            recoverer: ZERO_ADDRESS.toString()
+            callVerifier: callVerifierValue,
+            callForwarder: callForwarderValue,
+            data: abiEncodedTx,
+            tokenContract: tokenAddress || this.contracts.addresses.testToken,
+            tokenAmount: tokenAmount.toString(),
+            onlyPreferredRelays: onlyPreferredRelays ?? true,
+            isSmartWalletDeploy,
+            smartWalletAddress
         };
+
+        if (isSmartWalletDeploy) {
+            trxDetails = {
+                ...trxDetails,
+                index: index || '0',
+                recoverer: recoverer || ZERO_ADDRESS
+            };
+        } else {
+            const internalCallCost = await relayClient.getInternalCallCost(
+                trxDetails
+            );
+            trxDetails.gas = toHex(internalCallCost);
+
+            const tokenGas = (
+                await relayClient.estimateTokenTransferGas(
+                    trxDetails,
+                    relayWorker
+                )
+            ).toString();
+            trxDetails.tokenGas = tokenGas;
+        }
+
         const maxPossibleGasValue =
-            await this.relayProvider.relayClient.estimateMaxPossibleRelayGas(
+            await relayClient.estimateMaxPossibleRelayGas(
                 trxDetails,
                 relayWorker
             );
-        const maxPossibleGas = toBN(maxPossibleGasValue);
-        const estimate = maxPossibleGas.mul(gasPrice);
-        return estimate.toString();
+        return this.calculateCostFromGas(maxPossibleGasValue);
     }
 
     async estimateMaxPossibleRelayGasWithLinearFit(
-        destinationContract: string,
-        smartWalletAddress: string,
-        tokenFees: string,
-        abiEncodedTx: string,
-        relayWorker: string
+        options: RelayGasEstimationOptions
     ): Promise<string> {
-        console.debug('estimateMaxPossibleRelayGasWithLinearFit Params', {
+        log.debug('estimateMaxPossibleRelayGasWithLinearFit Params', options);
+
+        const {
             destinationContract,
             smartWalletAddress,
             tokenFees,
             abiEncodedTx,
             relayWorker
-        });
+        } = options;
 
-        const gasPrice = toBN(
-            await this.relayProvider.relayClient._calculateGasPrice()
-        );
         const tokenAmount = await this.web3Instance.utils.toWei(tokenFees);
-        const trxDetails = {
+        const trxDetails: EnvelopingTransactionDetails = {
             from: this._getAccountAddress(),
             to: destinationContract,
             value: '0',
@@ -475,7 +477,7 @@ export class DefaultRelayingServices implements RelayingServices {
             callForwarder: smartWalletAddress,
             data: abiEncodedTx,
             tokenContract: this.contracts.addresses.testToken,
-            tokenAmount: tokenAmount,
+            tokenAmount: tokenAmount.toString(),
             onlyPreferredRelays: true
         };
 
@@ -484,7 +486,19 @@ export class DefaultRelayingServices implements RelayingServices {
                 trxDetails,
                 relayWorker
             );
-        const maxPossibleGas = toBN(maxPossibleGasValue);
+        return this.calculateCostFromGas(maxPossibleGasValue);
+    }
+
+    private async calculateCostFromGas(gas: number) {
+        // TODO: we could temporary store this value for a certain amount of time
+        const gasPrice = toBN(
+            await this.relayProvider.relayClient._calculateGasPrice()
+        );
+        log.debug('calculateCostFromGas', {
+            gas,
+            gasPrice: gasPrice.toString()
+        });
+        const maxPossibleGas = toBN(gas);
         const estimate = maxPossibleGas.mul(gasPrice);
         return estimate.toString();
     }
@@ -493,5 +507,14 @@ export class DefaultRelayingServices implements RelayingServices {
         return this.account
             ? this.account.address
             : this.developmentAccounts[0];
+    }
+
+    private setLogLevel(loglevel?: number) {
+        const level = loglevel ?? Number.parseInt(process.env.LOG_LEVEL);
+        if (level > 5 || level < 0 || !level) {
+            console.log('Unknown log level specified, using default log level');
+            return;
+        }
+        log.setLevel(level as LogLevelNumbers);
     }
 }
