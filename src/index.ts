@@ -133,5 +133,6 @@ export {
     SmartWallet,
     RelayingTransactionOptions,
     RelayGasEstimationOptions,
-    SmartWalletDeploymentOptions
+    SmartWalletDeploymentOptions,
+    RelayingServicesAddresses
 };
