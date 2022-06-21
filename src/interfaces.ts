@@ -47,7 +47,6 @@ export interface RelayingServicesAddresses {
     customSmartWalletDeployVerifier: string;
     customSmartWalletRelayVerifier: string;
     sampleRecipient: string;
-    testToken: string;
 }
 
 export interface RelayingTransactionOptions {
@@ -66,7 +65,7 @@ export interface RelayGasEstimationOptions {
     tokenFees: string;
     abiEncodedTx: string;
     relayWorker: string;
-    tokenAddress?: string;
+    tokenAddress: string;
     onlyPreferredRelays?: boolean;
     callVerifier?: string;
     callForwarder?: string;

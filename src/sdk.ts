@@ -418,7 +418,7 @@ export class DefaultRelayingServices implements RelayingServices {
             callVerifier: callVerifierValue,
             callForwarder: callForwarderValue,
             data: abiEncodedTx,
-            tokenContract: tokenAddress || this.contracts.addresses.testToken,
+            tokenContract: tokenAddress,
             tokenAmount: tokenAmount.toString(),
             onlyPreferredRelays: onlyPreferredRelays ?? true,
             isSmartWalletDeploy,
@@ -464,7 +464,8 @@ export class DefaultRelayingServices implements RelayingServices {
             smartWalletAddress,
             tokenFees,
             abiEncodedTx,
-            relayWorker
+            relayWorker,
+            tokenAddress
         } = options;
 
         const tokenAmount = await this.web3Instance.utils.toWei(tokenFees);
@@ -476,7 +477,7 @@ export class DefaultRelayingServices implements RelayingServices {
             callVerifier: this.contracts.addresses.smartWalletRelayVerifier,
             callForwarder: smartWalletAddress,
             data: abiEncodedTx,
-            tokenContract: this.contracts.addresses.testToken,
+            tokenContract: tokenAddress,
             tokenAmount: tokenAmount.toString(),
             onlyPreferredRelays: true
         };
