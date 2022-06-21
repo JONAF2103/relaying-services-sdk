@@ -1,5 +1,5 @@
 {
-  "name": "@rsksmart/relaying-services-sdk",
+  "name": "@rsksmart/rif-relay-sdk",
   "version": "0.0.1-alpha.2",
   "description": "This project contains the SDK of the relaying services system.",
   "main": "dist/index.js",
