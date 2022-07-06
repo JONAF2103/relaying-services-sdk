@@ -300,8 +300,7 @@ export class DefaultRelayingServices implements RelayingServices {
     }
 
     async relayTransaction(
-        options: RelayingTransactionOptions,
-        nonBlock?: boolean
+        options: RelayingTransactionOptions
     ): Promise<TransactionReceipt> {
         log.debug('relayTransaction Params', {
             options
@@ -314,7 +313,8 @@ export class DefaultRelayingServices implements RelayingServices {
             transactionDetails,
             value,
             onlyPreferredRelays,
-            tokenAddress
+            tokenAddress,
+            waitForTransactionReceipt
         } = options;
 
         log.debug('Checking if the wallet exists');
@@ -347,6 +347,7 @@ export class DefaultRelayingServices implements RelayingServices {
                         tokenAmount ? tokenAmount.toString() : '0'
                     ),
                     onlyPreferredRelays: onlyPreferredRelays ?? true,
+                    waitForTransactionReceipt,
                     ...transactionDetails
                 }
             ]
@@ -365,8 +366,7 @@ export class DefaultRelayingServices implements RelayingServices {
                             jsonrpc.result
                         );
                         resolve(recipient);
-                    },
-                    nonBlock
+                    }
                 );
             }
         );
