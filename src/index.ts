@@ -68,7 +68,8 @@ interface RelayingServices {
      * will be subsidized.
      */
     relayTransaction(
-        options: RelayingTransactionOptions
+        options: RelayingTransactionOptions,
+        nonBlock?: boolean
     ): Promise<TransactionReceipt>;
 
     /**

@@ -300,7 +300,8 @@ export class DefaultRelayingServices implements RelayingServices {
     }
 
     async relayTransaction(
-        options: RelayingTransactionOptions
+        options: RelayingTransactionOptions,
+        nonBlock?: boolean
     ): Promise<TransactionReceipt> {
         log.debug('relayTransaction Params', {
             options
@@ -364,7 +365,8 @@ export class DefaultRelayingServices implements RelayingServices {
                             jsonrpc.result
                         );
                         resolve(recipient);
-                    }
+                    },
+                    nonBlock
                 );
             }
         );
