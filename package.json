@@ -1,6 +1,6 @@
 {
   "name": "@rsksmart/rif-relay-sdk",
-  "version": "0.0.1-alpha.4",
+  "version": "0.0.1-alpha.5",
   "description": "This project contains the SDK of the relaying services system.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -12,18 +12,29 @@
     "prepublishOnly": "scripts/prepublishOnly",
     "prettier:fix": "npx prettier --write --ignore-unknown .",
     "prettier": "npx prettier --check .",
+    "prepack": "npmignore --auto",
     "test": "scripts/test"
   },
   "author": "Relaying Services Team",
   "license": "MIT",
+  "publishConfig": {
+    "ignore": [
+      "!dist",
+      "!build",
+      "src",
+      "test",
+      ".github"
+    ]
+  },
   "dependencies": {
-    "@rsksmart/rif-relay-client": "0.0.2-alpha.2",
-    "@rsksmart/rif-relay-contracts": "0.0.2-alpha.2",
-    "@rsksmart/rif-relay-common": "0.0.2-alpha.3",
+    "@rsksmart/rif-relay-client": "0.0.2-alpha.3",
+    "@rsksmart/rif-relay-contracts": "0.0.2-alpha.4",
+    "@rsksmart/rif-relay-common": "0.0.2-alpha.4",
     "loglevel": "^1.8.0",
     "web3": "1.2.6",
     "web3-core": "1.2.6",
     "web3-eth": "1.2.6",
+    "npmignore": "^0.3.0",
     "web3-eth-contract": "1.2.6",
     "web3-utils": "1.2.6"
   },
