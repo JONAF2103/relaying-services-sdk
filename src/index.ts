@@ -127,7 +127,7 @@ interface RelayingServices {
     ): Promise<string>;
 
     /**
-     * It
+     * It looks for the transaction receipt of a transaction hash
      *
      * @param transactionHash transaction hash to look for the receipt
      * @param retries amount of times that would retry for the receipt
