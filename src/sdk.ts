@@ -7,7 +7,8 @@ import {
 } from '@rsksmart/rif-relay-common';
 import {
     RelayProvider,
-    resolveConfiguration
+    resolveConfiguration,
+    RelayingResult
 } from '@rsksmart/rif-relay-client';
 import Web3 from 'web3';
 import { DeployVerifier, RelayVerifier } from '@rsksmart/rif-relay-contracts';
@@ -245,15 +246,18 @@ export class DefaultRelayingServices implements RelayingServices {
             smartWalletAddress: address
         };
 
-        const transactionHash = await this.relayProvider.deploySmartWallet(
-            txDetails
-        );
+        const relayingResult: RelayingResult =
+            await this.relayProvider.deploySmartWallet(txDetails);
 
-        log.debug('Smart wallet successfully deployed', transactionHash);
+        const txHash: string = relayingResult.transaction
+            .hash(true)
+            .toString('hex');
+
+        log.debug('Smart wallet successfully deployed', txHash);
 
         return {
             deployment: {
-                deployTransaction: transactionHash,
+                deployTransaction: txHash,
                 tokenAddress
             },
             address,
@@ -301,7 +305,7 @@ export class DefaultRelayingServices implements RelayingServices {
 
     async relayTransaction(
         options: RelayingTransactionOptions
-    ): Promise<TransactionReceipt> {
+    ): Promise<RelayingResult> {
         log.debug('relayTransaction Params', {
             options
         });
@@ -313,8 +317,7 @@ export class DefaultRelayingServices implements RelayingServices {
             transactionDetails,
             value,
             onlyPreferredRelays,
-            tokenAddress,
-            waitForTransactionReceipt
+            tokenAddress
         } = options;
 
         log.debug('Checking if the wallet exists');
@@ -347,36 +350,25 @@ export class DefaultRelayingServices implements RelayingServices {
                         tokenAmount ? tokenAmount.toString() : '0'
                     ),
                     onlyPreferredRelays: onlyPreferredRelays ?? true,
-                    waitForTransactionReceipt,
                     ...transactionDetails
                 }
             ]
         };
 
         //we should return the transaction hash. let the user decide to wait.
-        const transactionReceipt: TransactionReceipt = await new Promise(
-            (resolve, reject) => {
-                this.relayProvider._ethSendTransaction(
-                    jsonRpcPayload,
-                    async (error: Error, jsonrpc: any) => {
-                        if (error) {
-                            reject(error);
-                        }
-                        const recipient = await web3.eth.getTransactionReceipt(
-                            jsonrpc.result
-                        );
-                        resolve(recipient);
+        const result: RelayingResult = await new Promise((resolve, reject) => {
+            this.relayProvider._ethSendTransaction(
+                jsonRpcPayload,
+                async (error: Error, jsonrpc: any) => {
+                    if (error) {
+                        reject(error);
                     }
-                );
-            }
-        );
+                    resolve(jsonrpc.result);
+                }
+            );
+        });
 
-        if (!transactionReceipt.status) {
-            const errorMessage = 'Error relaying transaction';
-            log.debug(errorMessage, transactionReceipt);
-            throw new Error(errorMessage);
-        }
-        return transactionReceipt;
+        return result;
     }
 
     async estimateMaxPossibleRelayGas(options: RelayGasEstimationOptions) {

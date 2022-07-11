@@ -12,6 +12,7 @@ import {
     SmartWalletDeploymentOptions
 } from './interfaces';
 import { EnvelopingConfig } from '@rsksmart/rif-relay-common';
+import { RelayingResult } from '@rsksmart/rif-relay-client';
 
 interface RelayingServices {
     /**
@@ -69,7 +70,7 @@ interface RelayingServices {
      */
     relayTransaction(
         options: RelayingTransactionOptions
-    ): Promise<TransactionReceipt>;
+    ): Promise<RelayingResult>;
 
     /**
      * It checks if the provided tokenAddress is allowed by the rif relay verifiers.
