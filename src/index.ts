@@ -125,6 +125,19 @@ interface RelayingServices {
     estimateMaxPossibleRelayGasWithLinearFit(
         options: RelayGasEstimationOptions
     ): Promise<string>;
+
+    /**
+     * It
+     *
+     * @param transactionHash transaction hash to look for the receipt
+     * @param retries amount of times that would retry for the receipt
+     * @param initialBackoff initial time to wait before each retry, this time would be double on each attemp
+     */
+    getTransactionReceipt(
+        transactionHash: string,
+        retries: number,
+        initialBackoff: number
+    ): Promise<TransactionReceipt>;
 }
 
 export {
