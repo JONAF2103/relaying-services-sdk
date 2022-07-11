@@ -31,8 +31,6 @@ export class DefaultRelayingServices implements RelayingServices {
     private developmentAccounts: string[]; //code should be the same for develop and prod
     private relayProvider: RelayProvider;
     private contracts: Contracts;
-    private contractAddresses: RelayingServicesAddresses;
-    private envelopingConfig: EnvelopingConfig;
 
     private txId = 777;
 
@@ -482,6 +480,18 @@ export class DefaultRelayingServices implements RelayingServices {
                 relayWorker
             );
         return this.calculateCostFromGas(maxPossibleGasValue);
+    }
+
+    async getTransactionReceipt(
+        transactionHash: string,
+        retries: number,
+        initialBackoff: number
+    ): Promise<TransactionReceipt> {
+        return await this.relayProvider.relayClient.getTransactionReceipt(
+            transactionHash,
+            retries,
+            initialBackoff
+        );
     }
 
     private async calculateCostFromGas(gas: number) {
