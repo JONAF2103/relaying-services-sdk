@@ -1,5 +1,6 @@
 import { RelayingServices } from './index';
 import { Account, HttpProvider, TransactionReceipt } from 'web3-core';
+import { PrefixedHexString } from 'ethereumjs-tx';
 import {
     EnvelopingConfig,
     EnvelopingTransactionDetails,
@@ -214,7 +215,8 @@ export class DefaultRelayingServices implements RelayingServices {
             recovererAddress,
             onlyPreferredRelays,
             callVerifier,
-            callForwarder
+            callForwarder,
+            transactionDetails
         } = options;
 
         log.debug('Checking if the wallet already exists');
@@ -241,7 +243,8 @@ export class DefaultRelayingServices implements RelayingServices {
             recoverer: recovererAddress ?? ZERO_ADDRESS,
             isSmartWalletDeploy: true,
             onlyPreferredRelays: onlyPreferredRelays || true,
-            smartWalletAddress: address
+            smartWalletAddress: address,
+            ...transactionDetails
         };
 
         const relayingResult: RelayingResult =
@@ -483,9 +486,9 @@ export class DefaultRelayingServices implements RelayingServices {
     }
 
     async getTransactionReceipt(
-        transactionHash: string,
-        retries: number,
-        initialBackoff: number
+        transactionHash: PrefixedHexString,
+        retries?: number,
+        initialBackoff?: number
     ): Promise<TransactionReceipt> {
         return await this.relayProvider.relayClient.getTransactionReceipt(
             transactionHash,

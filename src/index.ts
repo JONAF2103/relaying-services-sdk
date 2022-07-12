@@ -3,6 +3,7 @@
  */
 import { TransactionReceipt } from 'web3-core';
 import { DefaultRelayingServices } from './sdk';
+import { PrefixedHexString } from 'ethereumjs-tx';
 import {
     RelayGasEstimationOptions,
     RelayingServicesAddresses,
@@ -11,7 +12,7 @@ import {
     SmartWallet,
     SmartWalletDeploymentOptions
 } from './interfaces';
-import { EnvelopingConfig } from '@rsksmart/rif-relay-common';
+import { EnvelopingConfig, EnvelopingTransactionDetails } from '@rsksmart/rif-relay-common';
 import { RelayingResult } from '@rsksmart/rif-relay-client';
 
 interface RelayingServices {
@@ -134,9 +135,9 @@ interface RelayingServices {
      * @param initialBackoff initial time to wait before each retry, this time would be double on each attemp
      */
     getTransactionReceipt(
-        transactionHash: string,
-        retries: number,
-        initialBackoff: number
+        transactionHash: PrefixedHexString,
+        retries?: number,
+        initialBackoff?: number
     ): Promise<TransactionReceipt>;
 }
 
@@ -148,5 +149,8 @@ export {
     RelayingTransactionOptions,
     RelayGasEstimationOptions,
     SmartWalletDeploymentOptions,
-    RelayingServicesAddresses
+    RelayingServicesAddresses,
+    RelayingResult,
+    EnvelopingTransactionDetails,
+    EnvelopingConfig
 };
