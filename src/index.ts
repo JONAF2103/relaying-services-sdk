@@ -12,7 +12,10 @@ import {
     SmartWallet,
     SmartWalletDeploymentOptions
 } from './interfaces';
-import { EnvelopingConfig, EnvelopingTransactionDetails } from '@rsksmart/rif-relay-common';
+import {
+    EnvelopingConfig,
+    EnvelopingTransactionDetails
+} from '@rsksmart/rif-relay-common';
 import { RelayingResult } from '@rsksmart/rif-relay-client';
 
 interface RelayingServices {
