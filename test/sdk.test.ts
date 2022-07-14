@@ -8,7 +8,6 @@ import {
     MOCK_CONTRACT_ADDRESS,
     MOCK_SMART_WALLET_ADDRESS,
     MOCK_TOKEN_ADDRESS,
-    MOCK_TRANSACTION_HASH,
     MOCK_RELAYING_RESULT
 } from './constants';
 import { MockRelayingServices, Web3EthMock, Web3UtilsMock } from './mock';

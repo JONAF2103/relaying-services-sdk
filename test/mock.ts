@@ -14,7 +14,6 @@ import {
     MOCK_CODE,
     MOCK_RELAYING_RESULT,
     MOCK_SMART_WALLET_ADDRESS,
-    MOCK_TRANSACTION_HASH,
     MOCK_TRANSACTION_RECEIPT
 } from './constants';
 import { Account, TransactionReceipt } from 'web3-core';
