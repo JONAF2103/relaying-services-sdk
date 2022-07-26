@@ -151,9 +151,8 @@ describe('SDK not deployed tests', () => {
             }
         );
         const relayingResult: RelayingResult = MOCK_RELAYING_RESULT;
-        const txHash: string = relayingResult.transaction
-            .hash(true)
-            .toString('hex');
+        const txHash: string =
+            '0x' + relayingResult.transaction.hash(true).toString('hex');
         expect(smartWallet.address).toBe(MOCK_SMART_WALLET_ADDRESS);
         expect(smartWallet.index).toBe(0);
         expect(smartWallet.deployment.tokenAddress).toBe(MOCK_TOKEN_ADDRESS);
