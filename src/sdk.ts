@@ -9,7 +9,8 @@ import {
 import {
     RelayProvider,
     resolveConfiguration,
-    RelayingResult
+    RelayingResult,
+    JsonRpcResponseRelay
 } from '@rsksmart/rif-relay-client';
 import Web3 from 'web3';
 import { DeployVerifier, RelayVerifier } from '@rsksmart/rif-relay-contracts';
@@ -250,9 +251,8 @@ export class DefaultRelayingServices implements RelayingServices {
         const relayingResult: RelayingResult =
             await this.relayProvider.deploySmartWallet(txDetails);
 
-        const txHash: string = relayingResult.transaction
-            .hash(true)
-            .toString('hex');
+        const txHash: string =
+            '0x' + relayingResult.transaction.hash(true).toString('hex');
 
         log.debug('Smart wallet successfully deployed', txHash);
 
@@ -360,11 +360,11 @@ export class DefaultRelayingServices implements RelayingServices {
         const result: RelayingResult = await new Promise((resolve, reject) => {
             this.relayProvider._ethSendTransaction(
                 jsonRpcPayload,
-                async (error: Error, jsonrpc: any) => {
+                async (error: Error, jsonrpc: JsonRpcResponseRelay) => {
                     if (error) {
                         reject(error);
                     }
-                    resolve(jsonrpc.result);
+                    resolve(jsonrpc.relayingResult);
                 }
             );
         });
