@@ -74,4 +74,5 @@ export interface RelayGasEstimationOptions {
     isSmartWalletDeploy?: boolean;
     index?: string;
     recoverer?: string;
+    collectorContract?: string;
 }
