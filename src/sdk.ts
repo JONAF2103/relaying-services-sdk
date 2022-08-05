@@ -497,7 +497,7 @@ export class DefaultRelayingServices implements RelayingServices {
         );
     }
 
-    async validateSmartWallet(address: string): Promise<SmartWallet> {
+    async validateSmartWallet(address: string): Promise<void> {
         log.debug('Validating smart wallet', address);
 
         log.debug('Checking if the wallet already exists');
@@ -514,11 +514,6 @@ export class DefaultRelayingServices implements RelayingServices {
             data: '0x'
         };
         await this.relayProvider.relayClient.validateSmartWallet(txDetails);
-        return {
-            index: -1,
-            deployed: true,
-            address
-        };
     }
 
     private async calculateCostFromGas(gas: number) {

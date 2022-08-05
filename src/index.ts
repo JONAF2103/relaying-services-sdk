@@ -148,7 +148,7 @@ interface RelayingServices {
      *
      * @param address smart wallet address to validate
      */
-    validateSmartWallet(address: string): Promise<SmartWallet>;
+    validateSmartWallet(address: string): Promise<void>;
 }
 
 export {
