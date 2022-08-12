@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "scripts": {
+    "prepare": "scripts/prepare",
     "build": "scripts/build",
     "dist": "scripts/dist",
     "lint": "eslint . --ext .ts",
