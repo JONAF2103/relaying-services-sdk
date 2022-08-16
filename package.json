@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "scripts": {
+    "prepare": "scripts/prepare",
     "build": "scripts/build",
     "dist": "scripts/dist",
     "lint": "eslint . --ext .ts",
@@ -27,9 +28,9 @@
     ]
   },
   "dependencies": {
-    "@rsksmart/rif-relay-client": "0.0.2-alpha.7",
+    "@rsksmart/rif-relay-client": "0.0.2-alpha.8",
     "@rsksmart/rif-relay-contracts": "0.0.2-alpha.10",
-    "@rsksmart/rif-relay-common": "0.0.2-alpha.8",
+    "@rsksmart/rif-relay-common": "0.0.2-alpha.10",
     "loglevel": "^1.8.0",
     "ethereumjs-tx": "~2.1.2",
     "web3": "1.2.6",

@@ -497,6 +497,25 @@ export class DefaultRelayingServices implements RelayingServices {
         );
     }
 
+    async validateSmartWallet(address: string): Promise<void> {
+        log.debug('Validating smart wallet', address);
+
+        log.debug('Checking if the wallet already exists');
+        const isSmartWalletDeployed = await this.isSmartWalletDeployed(address);
+
+        if (!isSmartWalletDeployed) {
+            throw new Error('Smart Wallet  is not deployed');
+        }
+
+        const txDetails: EnvelopingTransactionDetails = {
+            from: this._getAccountAddress(),
+            to: ZERO_ADDRESS,
+            callForwarder: address,
+            data: '0x'
+        };
+        await this.relayProvider.relayClient.validateSmartWallet(txDetails);
+    }
+
     private async calculateCostFromGas(gas: number) {
         // TODO: we could temporary store this value for a certain amount of time
         const gasPrice = toBN(
