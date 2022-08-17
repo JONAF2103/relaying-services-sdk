@@ -58,7 +58,6 @@ export interface RelayingTransactionOptions {
     value?: number;
     onlyPreferredRelays?: boolean;
     tokenAddress: string;
-    collectorContract?: string;
 }
 
 export interface RelayGasEstimationOptions {
@@ -66,7 +65,6 @@ export interface RelayGasEstimationOptions {
     smartWalletAddress: string;
     tokenFees: string;
     abiEncodedTx: string;
-    relayWorker: string;
     tokenAddress: string;
     onlyPreferredRelays?: boolean;
     callVerifier?: string;
@@ -74,5 +72,4 @@ export interface RelayGasEstimationOptions {
     isSmartWalletDeploy?: boolean;
     index?: string;
     recoverer?: string;
-    collectorContract?: string;
 }
