@@ -347,9 +347,9 @@ export class DefaultRelayingServices implements RelayingServices {
                     callForwarder: address,
                     data: unsignedTx.data,
                     tokenContract: tokenAddress,
-                    tokenAmount: await this.web3Instance.utils.toWei(
-                        tokenAmount ? tokenAmount.toString() : '0'
-                    ),
+                    tokenAmount: [null, undefined].includes(tokenAmount)
+                        ? undefined
+                        : this.web3Instance.utils.toWei(tokenAmount.toString()),
                     onlyPreferredRelays: onlyPreferredRelays ?? true,
                     ...transactionDetails
                 }
@@ -382,7 +382,6 @@ export class DefaultRelayingServices implements RelayingServices {
             smartWalletAddress,
             tokenFees,
             abiEncodedTx,
-            relayWorker,
             tokenAddress,
             onlyPreferredRelays,
             callVerifier,
@@ -433,19 +432,13 @@ export class DefaultRelayingServices implements RelayingServices {
             trxDetails.gas = toHex(internalCallCost);
 
             const tokenGas = (
-                await relayClient.estimateTokenTransferGas(
-                    trxDetails,
-                    relayWorker
-                )
+                await relayClient.estimateTokenTransferGas(trxDetails)
             ).toString();
             trxDetails.tokenGas = tokenGas;
         }
 
         const maxPossibleGasValue =
-            await relayClient.estimateMaxPossibleRelayGas(
-                trxDetails,
-                relayWorker
-            );
+            await relayClient.estimateMaxPossibleRelayGas(trxDetails);
         return this.calculateCostFromGas(maxPossibleGasValue);
     }
 
@@ -459,7 +452,6 @@ export class DefaultRelayingServices implements RelayingServices {
             smartWalletAddress,
             tokenFees,
             abiEncodedTx,
-            relayWorker,
             tokenAddress
         } = options;
 
@@ -479,8 +471,7 @@ export class DefaultRelayingServices implements RelayingServices {
 
         const maxPossibleGasValue =
             await this.relayProvider.relayClient.estimateMaxPossibleRelayGasWithLinearFit(
-                trxDetails,
-                relayWorker
+                trxDetails
             );
         return this.calculateCostFromGas(maxPossibleGasValue);
     }
