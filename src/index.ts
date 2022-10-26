@@ -135,7 +135,7 @@ interface RelayingServices {
     ): Promise<string>;
 
     /**
-     * It estimates the gasLimit for a deploy/relay using a estandar/linear fit
+     * It estimates the gasLimit for a deploy/relay using a standard/linear fit
      *
      * @param destinationContract destination contract address
      * @param smartWalletAddress smart wallet address to all forwarder transaction

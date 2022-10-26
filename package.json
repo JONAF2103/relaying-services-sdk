@@ -28,8 +28,8 @@
     ]
   },
   "dependencies": {
-    "@rsksmart/rif-relay-client": "1.0.0-alpha.0",
-    "@rsksmart/rif-relay-common": "1.0.0-alpha.0",
+    "@rsksmart/rif-relay-client": "github:rsksmart/rif-relay-client#PP-508/fees-from-server",
+    "@rsksmart/rif-relay-common": "github:rsksmart/rif-relay-common#PP-437/enpoint-required-fees",
     "@rsksmart/rif-relay-contracts": "1.0.0-alpha.0",
     "bignumber.js": "^9.1.0",
     "ethereumjs-tx": "~2.1.2",
