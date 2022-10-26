@@ -14,9 +14,12 @@ import {
 } from './interfaces';
 import {
     EnvelopingConfig,
-    EnvelopingTransactionDetails
+    EnvelopingTransactionDetails,
+    ERC20Options,
+    ERC20Token
 } from '@rsksmart/rif-relay-common';
-import { RelayingResult } from '@rsksmart/rif-relay-client';
+import { RelayEstimation, RelayingResult } from '@rsksmart/rif-relay-client';
+import BigNumber from 'bignumber.js';
 
 interface RelayingServices {
     /**
@@ -132,6 +135,19 @@ interface RelayingServices {
     ): Promise<string>;
 
     /**
+     * It estimates the gasLimit for a deploy/relay using a estandar/linear fit
+     *
+     * @param destinationContract destination contract address
+     * @param smartWalletAddress smart wallet address to all forwarder transaction
+     * @param tokenFees amount of token that cost the transaction
+     * @param abiEncodedTx Abi encoding transaction details
+     * @param relayWorker the realy worker contract address
+     */
+    estimateGasRelayLimit(
+        options: RelayGasEstimationOptions
+    ): Promise<RelayEstimation>;
+
+    /**
      * It looks for the transaction receipt of a transaction hash
      *
      * @param transactionHash transaction hash to look for the receipt
@@ -150,6 +166,25 @@ interface RelayingServices {
      * @param address smart wallet address to validate
      */
     validateSmartWallet(address: string): Promise<void>;
+
+    /**
+     * It returns an ERC20Token
+     *
+     * @param address token address
+     * @param options attributes to query
+     */
+    getERC20Token(address: string, options?: ERC20Options): Promise<ERC20Token>;
+
+    /**
+     * It returns the ERC20 token price
+     *
+     * @param erc20Token token instance
+     * @param targetCurrency currency to get the price on
+     */
+    getERC20TokenPrice(
+        erc20: ERC20Token,
+        targetCurrency: string
+    ): Promise<BigNumber>;
 }
 
 export {
@@ -163,5 +198,8 @@ export {
     RelayingServicesAddresses,
     RelayingResult,
     EnvelopingTransactionDetails,
-    EnvelopingConfig
+    EnvelopingConfig,
+    ERC20Token,
+    ERC20Options,
+    RelayEstimation
 };

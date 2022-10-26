@@ -4,13 +4,16 @@ import { PrefixedHexString } from 'ethereumjs-tx';
 import {
     EnvelopingConfig,
     EnvelopingTransactionDetails,
-    Web3Provider
+    Web3Provider,
+    ERC20Token,
+    ERC20Options
 } from '@rsksmart/rif-relay-common';
 import {
     RelayProvider,
     resolveConfiguration,
     RelayingResult,
-    JsonRpcResponseRelay
+    JsonRpcResponseRelay,
+    RelayPricer
 } from '@rsksmart/rif-relay-client';
 import Web3 from 'web3';
 import { DeployVerifier, RelayVerifier } from '@rsksmart/rif-relay-contracts';
@@ -26,7 +29,9 @@ import {
 import { Contracts } from './contracts';
 import { toBN, toHex } from 'web3-utils';
 import log, { LogLevelNumbers } from 'loglevel';
+import BigNumber from 'bignumber.js';
 
+const pricer = new RelayPricer();
 export class DefaultRelayingServices implements RelayingServices {
     private readonly web3Instance: Web3;
     private readonly account?: Account;
@@ -476,6 +481,65 @@ export class DefaultRelayingServices implements RelayingServices {
         return this.calculateCostFromGas(maxPossibleGasValue);
     }
 
+    async estimateGasRelayLimit(options: RelayGasEstimationOptions) {
+        const {
+            destinationContract,
+            smartWalletAddress,
+            tokenFees,
+            abiEncodedTx,
+            tokenAddress,
+            callVerifier,
+            isSmartWalletDeploy,
+            callForwarder,
+            isLinearEstimation,
+            index,
+            recoverer
+        } = options;
+
+        const relayClient = this.relayProvider.relayClient;
+        const tokenAmount = this.web3Instance.utils.toWei(tokenFees);
+        const callForwarderValue =
+            callForwarder ||
+            (isSmartWalletDeploy
+                ? this.contracts.addresses.smartWalletFactory
+                : smartWalletAddress);
+        const callVerifierValue =
+            callVerifier ||
+            (isSmartWalletDeploy
+                ? this.contracts.addresses.smartWalletDeployVerifier
+                : this.contracts.addresses.smartWalletRelayVerifier);
+
+        const transactionDetails: EnvelopingTransactionDetails = {
+            from: this._getAccountAddress(),
+            to: destinationContract || ZERO_ADDRESS,
+            value: '0',
+            relayHub: this.contracts.addresses.relayHub,
+            callVerifier: callVerifierValue,
+            callForwarder: callForwarderValue,
+            data: abiEncodedTx,
+            tokenContract: tokenAddress,
+            tokenAmount: tokenAmount.toString(),
+            isSmartWalletDeploy,
+            index: index ?? '0',
+            recoverer: recoverer ?? ZERO_ADDRESS
+        };
+
+        let estimation;
+        if (isLinearEstimation) {
+            estimation = await relayClient.estimateGasLimit(
+                transactionDetails,
+                false
+            );
+        } else {
+            estimation = await relayClient.estimateGasLimit(
+                transactionDetails,
+                true
+            );
+        }
+
+        return estimation;
+    }
+
     async getTransactionReceipt(
         transactionHash: PrefixedHexString,
         retries?: number,
@@ -505,6 +569,28 @@ export class DefaultRelayingServices implements RelayingServices {
             data: '0x'
         };
         await this.relayProvider.relayClient.validateSmartWallet(txDetails);
+    }
+
+    async getERC20Token(
+        address: string,
+        options?: ERC20Options
+    ): Promise<ERC20Token> {
+        const relayClient = this.relayProvider.relayClient;
+        return await relayClient.contractInteractor.getERC20Token(
+            address,
+            options
+        );
+    }
+
+    async getERC20TokenPrice(
+        erc20: ERC20Token,
+        targetCurrency: string
+    ): Promise<BigNumber> {
+        const exchangeRate = await pricer.getExchangeRate(
+            erc20.symbol,
+            targetCurrency
+        );
+        return exchangeRate;
     }
 
     private async calculateCostFromGas(gas: number) {
