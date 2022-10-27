@@ -100,7 +100,7 @@ describe('Deployed SDK tests', () => {
                 },
                 {
                     tokenAddress: MOCK_TOKEN_ADDRESS,
-                    tokenAmount: 0
+                    tokenAmount: '0'
                 }
             );
             fail("Smart wallet deployment expected to fail, but it didn't");
@@ -175,7 +175,7 @@ describe('SDK not deployed tests', () => {
         const options: RelayingTransactionOptions = {
             smartWallet,
             unsignedTx,
-            tokenAmount: 0,
+            tokenAmount: '0',
             tokenAddress: MOCK_TOKEN_ADDRESS
         };
 
