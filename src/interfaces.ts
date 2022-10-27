@@ -19,7 +19,7 @@ export interface SmartWalletDeployment {
 
 export interface SmartWalletDeploymentOptions {
     tokenAddress?: string;
-    tokenAmount?: number;
+    tokenAmount?: string;
     recovererAddress?: string;
     onlyPreferredRelays?: boolean;
     callVerifier?: string;
@@ -53,7 +53,7 @@ export interface RelayingServicesAddresses {
 export interface RelayingTransactionOptions {
     unsignedTx: TransactionConfig;
     smartWallet: SmartWallet;
-    tokenAmount?: number;
+    tokenAmount?: string;
     transactionDetails?: Partial<EnvelopingTransactionDetails>;
     value?: number;
     onlyPreferredRelays?: boolean;

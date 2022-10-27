@@ -243,7 +243,7 @@ export class DefaultRelayingServices implements RelayingServices {
             callForwarder:
                 callForwarder ?? this.contracts.addresses.smartWalletFactory,
             tokenContract: tokenAddress ?? ZERO_ADDRESS,
-            tokenAmount: tokenAmount ? tokenAmount.toString() : '0',
+            tokenAmount: tokenAmount ? tokenAmount : '0',
             data: '0x',
             index: index.toString(),
             recoverer: recovererAddress ?? ZERO_ADDRESS,
@@ -352,9 +352,7 @@ export class DefaultRelayingServices implements RelayingServices {
                     callForwarder: address,
                     data: unsignedTx.data,
                     tokenContract: tokenAddress,
-                    tokenAmount: [null, undefined].includes(tokenAmount)
-                        ? undefined
-                        : this.web3Instance.utils.toWei(tokenAmount.toString()),
+                    tokenAmount: tokenAmount,
                     onlyPreferredRelays: onlyPreferredRelays ?? true,
                     ...transactionDetails
                 }
