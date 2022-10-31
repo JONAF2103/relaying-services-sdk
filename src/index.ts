@@ -135,7 +135,7 @@ interface RelayingServices {
     ): Promise<string>;
 
     /**
-     * It estimates the gasLimit for a deploy/relay using a standard/linear fit
+     * It estimates the max possible gas for a deploy/relay using a standard/linear fit
      *
      * @param destinationContract destination contract address
      * @param smartWalletAddress smart wallet address to all forwarder transaction
@@ -143,7 +143,7 @@ interface RelayingServices {
      * @param abiEncodedTx Abi encoding transaction details
      * @param relayWorker the realy worker contract address
      */
-    estimateGasRelayLimit(
+    estimateMaxPossibleGas(
         options: RelayGasEstimationOptions
     ): Promise<RelayEstimation>;
 

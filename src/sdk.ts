@@ -479,7 +479,7 @@ export class DefaultRelayingServices implements RelayingServices {
         return this.calculateCostFromGas(maxPossibleGasValue);
     }
 
-    async estimateGasRelayLimit(options: RelayGasEstimationOptions) {
+    async estimateMaxPossibleGas(options: RelayGasEstimationOptions) {
         const {
             destinationContract,
             smartWalletAddress,
@@ -487,12 +487,13 @@ export class DefaultRelayingServices implements RelayingServices {
             abiEncodedTx,
             tokenAddress,
             callVerifier,
-            isSmartWalletDeploy,
             callForwarder,
             isLinearEstimation,
             index,
             recoverer
         } = options;
+
+        const isSmartWalletDeploy = index ? true : false;
 
         const relayClient = this.relayProvider.relayClient;
         const tokenAmount = this.web3Instance.utils.toWei(tokenFees);
@@ -522,18 +523,10 @@ export class DefaultRelayingServices implements RelayingServices {
             recoverer: recoverer ?? ZERO_ADDRESS
         };
 
-        let estimation;
-        if (isLinearEstimation) {
-            estimation = await relayClient.estimateGasLimit(
-                transactionDetails,
-                false
-            );
-        } else {
-            estimation = await relayClient.estimateGasLimit(
-                transactionDetails,
-                true
-            );
-        }
+        const estimation = await relayClient.estimateMaxPossibleGas(
+            transactionDetails,
+            !isLinearEstimation
+        );
 
         return estimation;
     }
