@@ -493,7 +493,7 @@ export class DefaultRelayingServices implements RelayingServices {
             recoverer
         } = options;
 
-        const isSmartWalletDeploy = index ? true : false;
+        const isSmartWalletDeploy = 'index' in options;
 
         const relayClient = this.relayProvider.relayClient;
         const tokenAmount = this.web3Instance.utils.toWei(tokenFees);
