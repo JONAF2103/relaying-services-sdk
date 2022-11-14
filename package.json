@@ -28,9 +28,9 @@
     ]
   },
   "dependencies": {
-    "@rsksmart/rif-relay-client": "1.0.0-alpha.2",
+    "@rsksmart/rif-relay-client": "github:rsksmart/rif-relay-client#PP-504/remove-worker-configuration",
     "@rsksmart/rif-relay-common": "1.0.0-alpha.1",
-    "@rsksmart/rif-relay-contracts": "1.0.0-alpha.0",
+    "@rsksmart/rif-relay-contracts": "github:rsksmart/rif-relay-contracts#PP-504/remove-worker-configuration",
     "bignumber.js": "^9.1.0",
     "ethereumjs-tx": "~2.1.2",
     "loglevel": "^1.8.0",
