@@ -16,7 +16,11 @@ import {
     RelayPricer
 } from '@rsksmart/rif-relay-client';
 import Web3 from 'web3';
-import { DeployVerifier, RelayVerifier } from '@rsksmart/rif-relay-contracts';
+import {
+    Collector,
+    DeployVerifier,
+    RelayVerifier
+} from '@rsksmart/rif-relay-contracts';
 import { addressHasCode, getRevertReason, mergeConfiguration } from './utils';
 import { ZERO_ADDRESS } from './constants';
 import {
@@ -582,6 +586,28 @@ export class DefaultRelayingServices implements RelayingServices {
             targetCurrency
         );
         return exchangeRate;
+    }
+
+    async getPartners(): Promise<string[]> {
+        const { feesReceiver, relayWorkerAddress } =
+            await this.relayProvider.relayClient.getPingResponse();
+        let partners: Array<{ beneficiary: string; share: string }> = [];
+        if (feesReceiver != relayWorkerAddress) {
+            try {
+                const collector = await new this.web3Instance.eth.Contract(
+                    Collector.abi,
+                    feesReceiver
+                );
+                console.log(collector);
+                partners = await collector.methods.getPartners().call();
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        return [
+            feesReceiver,
+            ...partners.map((partner) => partner.beneficiary)
+        ];
     }
 
     private async calculateCostFromGas(gas: number) {

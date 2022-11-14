@@ -5,7 +5,8 @@ import { getContract, getContractAddresses, mergeConfiguration } from './utils';
 import {
     DeployVerifier,
     RelayVerifier,
-    SmartWalletFactory
+    SmartWalletFactory,
+    Collector
 } from '@rsksmart/rif-relay-contracts';
 import { ContractError } from './ContractError';
 import log from 'loglevel';

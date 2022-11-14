@@ -185,6 +185,11 @@ interface RelayingServices {
         erc20: ERC20Token,
         targetCurrency: string
     ): Promise<BigNumber>;
+
+    /**
+     * It returns the feesReceiver and Partners
+     */
+    getPartners(): Promise<string[]>;
 }
 
 export {
