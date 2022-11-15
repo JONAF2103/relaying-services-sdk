@@ -6,7 +6,8 @@ import {
     EnvelopingTransactionDetails,
     Web3Provider,
     ERC20Token,
-    ERC20Options
+    ERC20Options,
+    PingResponse
 } from '@rsksmart/rif-relay-common';
 import {
     RelayProvider,
@@ -586,6 +587,10 @@ export class DefaultRelayingServices implements RelayingServices {
             targetCurrency
         );
         return exchangeRate;
+    }
+
+    async getPingResponse(): Promise<PingResponse> {
+        return this.relayProvider.relayClient.getPingResponse();
     }
 
     async getPartners(): Promise<string[]> {
