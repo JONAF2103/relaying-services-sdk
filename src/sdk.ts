@@ -603,10 +603,9 @@ export class DefaultRelayingServices implements RelayingServices {
                     Collector.abi,
                     feesReceiver
                 );
-                console.log(collector);
                 partners = await collector.methods.getPartners().call();
             } catch (error) {
-                console.log(error);
+                log.error(error);
             }
         }
         return [
