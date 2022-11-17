@@ -6,7 +6,8 @@ import {
     EnvelopingTransactionDetails,
     Web3Provider,
     ERC20Token,
-    ERC20Options
+    ERC20Options,
+    PingResponse
 } from '@rsksmart/rif-relay-common';
 import {
     RelayProvider,
@@ -16,7 +17,11 @@ import {
     RelayPricer
 } from '@rsksmart/rif-relay-client';
 import Web3 from 'web3';
-import { DeployVerifier, RelayVerifier } from '@rsksmart/rif-relay-contracts';
+import {
+    Collector,
+    DeployVerifier,
+    RelayVerifier
+} from '@rsksmart/rif-relay-contracts';
 import { addressHasCode, getRevertReason, mergeConfiguration } from './utils';
 import { ZERO_ADDRESS } from './constants';
 import {
@@ -582,6 +587,31 @@ export class DefaultRelayingServices implements RelayingServices {
             targetCurrency
         );
         return exchangeRate;
+    }
+
+    async getPingResponse(): Promise<PingResponse> {
+        return this.relayProvider.relayClient.getPingResponse();
+    }
+
+    async getPartners(): Promise<string[]> {
+        const { feesReceiver, relayWorkerAddress } =
+            await this.relayProvider.relayClient.getPingResponse();
+        let partners: Array<{ beneficiary: string; share: string }> = [];
+        if (feesReceiver != relayWorkerAddress) {
+            try {
+                const collector = await new this.web3Instance.eth.Contract(
+                    Collector.abi,
+                    feesReceiver
+                );
+                partners = await collector.methods.getPartners().call();
+            } catch (error) {
+                log.error(error);
+            }
+        }
+        return [
+            feesReceiver,
+            ...partners.map((partner) => partner.beneficiary)
+        ];
     }
 
     private async calculateCostFromGas(gas: number) {

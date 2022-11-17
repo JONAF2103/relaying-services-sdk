@@ -16,7 +16,8 @@ import {
     EnvelopingConfig,
     EnvelopingTransactionDetails,
     ERC20Options,
-    ERC20Token
+    ERC20Token,
+    PingResponse
 } from '@rsksmart/rif-relay-common';
 import { RelayEstimation, RelayingResult } from '@rsksmart/rif-relay-client';
 import BigNumber from 'bignumber.js';
@@ -185,6 +186,16 @@ interface RelayingServices {
         erc20: ERC20Token,
         targetCurrency: string
     ): Promise<BigNumber>;
+
+    /**
+     * It returns the ping response from the server
+     */
+    getPingResponse(): Promise<PingResponse>;
+
+    /**
+     * It returns the feesReceiver and Partners
+     */
+    getPartners(): Promise<string[]>;
 }
 
 export {
@@ -201,5 +212,6 @@ export {
     EnvelopingConfig,
     ERC20Token,
     ERC20Options,
-    RelayEstimation
+    RelayEstimation,
+    PingResponse
 };
