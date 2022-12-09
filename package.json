@@ -1,6 +1,6 @@
 {
   "name": "@rsksmart/rif-relay-sdk",
-  "version": "1.0.0-alpha.3",
+  "version": "1.0.0-alpha.4",
   "description": "This project contains the SDK of the relaying services system.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -28,9 +28,9 @@
     ]
   },
   "dependencies": {
-    "@rsksmart/rif-relay-client": "1.0.0-alpha.3",
-    "@rsksmart/rif-relay-common": "1.0.0-alpha.2",
-    "@rsksmart/rif-relay-contracts": "1.0.0-alpha.2",
+    "@rsksmart/rif-relay-client": "1.0.0-alpha.5",
+    "@rsksmart/rif-relay-common": "1.0.0-alpha.4",
+    "@rsksmart/rif-relay-contracts": "1.0.0-alpha.5",
     "bignumber.js": "^9.1.0",
     "ethereumjs-tx": "~2.1.2",
     "loglevel": "^1.8.0",
